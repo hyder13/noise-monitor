@@ -1,0 +1,2023 @@
+<title>低頻噪音記錄儀</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+:root{
+  --ink:#10161C; --ink-2:#1B242D; --ink-3:#2A3641;
+  --paper:#ECEEF1; --paper-2:#F6F7F9; --paper-3:#DFE3E8;
+  --bg:var(--paper-2); --surface:#FFFFFF; --surface-2:#F0F2F5;
+  --line:#D3D9E0; --line-soft:#E4E8ED;
+  --text:#141B22; --text-2:#4B5763; --text-3:#7A8794;
+  --signal:#D9541F;        /* 訊號橘：事件、警示 */
+  --signal-soft:#FBEDE6;
+  --lowfreq:#6B3FA0;       /* 低頻主導指標 */
+  --lowfreq-soft:#F0EAF7;
+  --calm:#1F6F5C;          /* 安靜、正常 */
+  --calm-soft:#E4F0EC;
+  --trace:#2F5E93;         /* 資料線 */
+  --trace-soft:#E6EDF5;
+  --grid:#C9D1DA;
+  --shadow:0 1px 2px rgba(16,22,28,.06), 0 4px 14px rgba(16,22,28,.05);
+  --r:10px;
+  --f-display:"Archivo","Noto Sans TC",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans","Noto Sans TC",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"Cascadia Mono",monospace;
+}
+:root:not([data-theme="light"]){ }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D1318; --surface:#151E26; --surface-2:#1B252E;
+    --line:#2B3843; --line-soft:#222D37;
+    --text:#E6EBF0; --text-2:#9DAAB6; --text-3:#6D7B88;
+    --signal:#FF7A45; --signal-soft:#2E1B12;
+    --lowfreq:#B98CE8; --lowfreq-soft:#241A33;
+    --calm:#4FBF9F; --calm-soft:#11271F;
+    --trace:#6FA3DE; --trace-soft:#141F2C;
+    --grid:#2A3742;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D1318; --surface:#151E26; --surface-2:#1B252E;
+  --line:#2B3843; --line-soft:#222D37;
+  --text:#E6EBF0; --text-2:#9DAAB6; --text-3:#6D7B88;
+  --signal:#FF7A45; --signal-soft:#2E1B12;
+  --lowfreq:#B98CE8; --lowfreq-soft:#241A33;
+  --calm:#4FBF9F; --calm-soft:#11271F;
+  --trace:#6FA3DE; --trace-soft:#141F2C;
+  --grid:#2A3742;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.25);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:var(--f-body); font-size:15px; line-height:1.55;
+  -webkit-text-size-adjust:100%;
+}
+#app{max-width:720px; margin:0 auto; padding:0 16px 96px; padding-block-start:0}
+
+/* ---------- 頂部狀態列 ---------- */
+.topbar{
+  position:sticky; top:0; z-index:30; background:var(--bg);
+  display:flex; align-items:center; gap:10px;
+  padding-block:12px 10px; border-bottom:1px solid var(--line-soft);
+}
+.brand{font-family:var(--f-display); font-weight:700; font-size:15px; letter-spacing:-.01em; white-space:nowrap}
+.brand .dot{display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--text-3); margin-right:7px; vertical-align:middle}
+body.running .brand .dot{background:var(--signal); animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+.topbar .spacer{flex:1}
+.clock{font-family:var(--f-mono); font-size:12px; color:var(--text-2); font-variant-numeric:tabular-nums}
+
+/* ---------- 通用 ---------- */
+.card{background:var(--surface); border:1px solid var(--line-soft); border-radius:var(--r); box-shadow:var(--shadow)}
+.pad{padding:14px}
+.stack{display:flex; flex-direction:column; gap:14px}
+.row{display:flex; gap:10px; align-items:center}
+.eyebrow{
+  font-family:var(--f-display); font-size:10.5px; font-weight:600;
+  letter-spacing:.11em; text-transform:uppercase; color:var(--text-3);
+}
+h2{font-family:var(--f-display); font-size:17px; font-weight:700; margin:0; letter-spacing:-.01em; text-wrap:balance}
+h3{font-family:var(--f-display); font-size:14px; font-weight:600; margin:0}
+p{margin:0}
+.muted{color:var(--text-2); font-size:13px}
+.tiny{font-size:11.5px; color:var(--text-3); line-height:1.5}
+.mono{font-family:var(--f-mono); font-variant-numeric:tabular-nums}
+button{font-family:inherit; font-size:14px; cursor:pointer}
+:focus-visible{outline:2px solid var(--signal); outline-offset:2px; border-radius:4px}
+
+.btn{
+  border:1px solid var(--line); background:var(--surface); color:var(--text);
+  border-radius:8px; padding:9px 14px; font-weight:500; transition:background .15s,border-color .15s;
+}
+.btn:hover{background:var(--surface-2)}
+.btn-primary{background:var(--signal); border-color:var(--signal); color:#fff; font-weight:600}
+.btn-primary:hover{background:var(--signal); filter:brightness(1.08)}
+.btn-stop{background:var(--ink-2); border-color:var(--ink-2); color:#fff; font-weight:600}
+:root[data-theme="dark"] .btn-stop, :root:not([data-theme="light"]) .btn-stop{background:var(--surface-2); border-color:var(--line); color:var(--text)}
+.btn-sm{padding:6px 10px; font-size:12.5px; border-radius:7px}
+.btn-block{width:100%; justify-content:center; display:flex; align-items:center; gap:8px; padding:13px}
+
+/* ---------- 主讀數 ---------- */
+.readout{position:relative; overflow:hidden}
+.readout .grid3{display:grid; grid-template-columns:auto 1fr; gap:16px; align-items:end}
+.big{
+  font-family:var(--f-display); font-weight:700; font-size:64px; line-height:.86;
+  letter-spacing:-.045em; font-variant-numeric:tabular-nums; color:var(--text);
+}
+.big .u{font-size:17px; font-weight:600; letter-spacing:0; color:var(--text-3); margin-left:5px}
+.big.clip{color:var(--signal)}
+.subreads{display:flex; flex-direction:column; gap:5px; padding-bottom:5px}
+.sub{display:grid; grid-template-columns:34px 1fr auto; gap:8px; align-items:center}
+.sub .k{font-family:var(--f-mono); font-size:11px; color:var(--text-3); font-weight:500}
+.sub .v{font-family:var(--f-mono); font-size:12.5px; font-variant-numeric:tabular-nums; color:var(--text-2); text-align:right; min-width:52px}
+.bar{height:5px; border-radius:3px; background:var(--surface-2); overflow:hidden}
+.bar i{display:block; height:100%; width:0%; border-radius:3px; transition:width .09s linear}
+.bar.z i{background:var(--trace)} .bar.c i{background:var(--lowfreq)} .bar.a i{background:var(--calm)}
+
+/* C-A 指標條 */
+.cma{margin-top:13px; padding-top:13px; border-top:1px dashed var(--line)}
+.cma-head{display:flex; justify-content:space-between; align-items:baseline; gap:8px}
+.cma-val{font-family:var(--f-mono); font-weight:600; font-size:22px; font-variant-numeric:tabular-nums}
+.cma-scale{position:relative; height:26px; margin-top:7px}
+.cma-track{position:absolute; top:8px; left:0; right:0; height:7px; border-radius:4px;
+  background:linear-gradient(90deg, var(--calm-soft) 0%, var(--calm-soft) 30%, var(--signal-soft) 45%, var(--lowfreq-soft) 65%, var(--lowfreq) 100%);
+  border:1px solid var(--line-soft);}
+.cma-needle{position:absolute; top:2px; width:3px; height:19px; border-radius:2px; background:var(--text); transition:left .12s ease-out; transform:translateX(-50%)}
+.cma-ticks{position:relative; height:13px; margin-top:1px}
+.cma-ticks span{position:absolute; transform:translateX(-50%); font-family:var(--f-mono); font-size:9.5px; color:var(--text-3)}
+.verdict{display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:600; padding:3px 9px; border-radius:20px}
+.v-low{background:var(--lowfreq-soft); color:var(--lowfreq)}
+.v-mid{background:var(--signal-soft); color:var(--signal)}
+.v-norm{background:var(--calm-soft); color:var(--calm)}
+
+/* ---------- canvas ---------- */
+.canvas-wrap{position:relative}
+canvas{display:block; width:100%; border-radius:8px; background:var(--surface-2); touch-action:pan-y}
+.canvas-label{position:absolute; top:7px; left:9px; font-family:var(--f-mono); font-size:10px; color:var(--text-3); pointer-events:none; background:color-mix(in srgb, var(--surface-2) 80%, transparent); padding:1px 5px; border-radius:4px}
+.legend{display:flex; flex-wrap:wrap; gap:12px; margin-top:8px}
+.legend i{display:inline-block; width:11px; height:3px; border-radius:2px; vertical-align:middle; margin-right:5px}
+
+/* ---------- 統計格 ---------- */
+.stats{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line-soft); border-radius:8px; overflow:hidden; border:1px solid var(--line-soft)}
+.stat{background:var(--surface); padding:9px 8px; text-align:center}
+.stat .n{font-family:var(--f-mono); font-weight:600; font-size:17px; font-variant-numeric:tabular-nums; display:block; line-height:1.2}
+.stat .l{font-size:10px; color:var(--text-3); letter-spacing:.02em}
+
+/* ---------- 事件清單 ---------- */
+.ev{border-bottom:1px solid var(--line-soft); padding:11px 14px; display:block; width:100%; text-align:left; background:none; border-left:3px solid transparent}
+.ev:last-child{border-bottom:none}
+.ev.k-lowfreq{border-left-color:var(--lowfreq)}
+.ev.k-impulse{border-left-color:var(--signal)}
+.ev.k-manual{border-left-color:var(--trace)}
+.markgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:7px}
+.markgrid button{padding:8px 4px; font-size:12.5px}
+.marklist{display:flex; flex-wrap:wrap; gap:6px; margin-top:10px}
+.marklist span{font-family:var(--f-mono); font-size:11px; background:var(--trace-soft); color:var(--trace);
+  padding:2px 7px; border-radius:5px; font-weight:500}
+.kindbar{display:flex; gap:7px; flex-wrap:wrap}
+.kindbar b{font-family:var(--f-mono); font-size:12.5px; padding:5px 11px; border-radius:7px; font-weight:600;
+  border:1px solid var(--line-soft); background:var(--surface)}
+.kindbar b i{font-style:normal; font-weight:400; color:var(--text-3); font-size:11px; margin-left:4px}
+.kb-lowfreq{color:var(--lowfreq)} .kb-impulse{color:var(--signal)}
+.kb-manual{color:var(--trace)} .kb-other{color:var(--text-2)}
+.reflist{margin-top:10px; display:flex; flex-direction:column; gap:6px}
+.refitem{display:flex; align-items:center; gap:9px; padding:7px 10px; background:var(--surface-2);
+  border:1px solid var(--line-soft); border-radius:8px}
+.refitem > div{flex:1; min-width:0; font-size:13px}
+.refitem b{font-weight:600}
+.refitem .tiny{display:inline}
+.ev-top{display:flex; align-items:baseline; gap:9px; flex-wrap:wrap}
+.ev-time{font-family:var(--f-mono); font-size:13px; font-weight:600; font-variant-numeric:tabular-nums}
+.ev-date{font-family:var(--f-mono); font-size:11px; color:var(--text-3)}
+.ev-db{margin-left:auto; font-family:var(--f-mono); font-size:15px; font-weight:600; font-variant-numeric:tabular-nums}
+.ev-meta{display:flex; gap:11px; flex-wrap:wrap; margin-top:3px; font-family:var(--f-mono); font-size:11px; color:var(--text-2)}
+.ev-meta b{font-weight:600; color:var(--lowfreq)}
+.ev-note{margin-top:5px; font-size:12.5px; color:var(--text-2); font-style:italic}
+.ev-detail{padding:0 14px 13px; border-bottom:1px solid var(--line-soft); background:var(--surface-2)}
+.chip{display:inline-block; font-family:var(--f-mono); font-size:10px; padding:1px 6px; border-radius:4px; background:var(--lowfreq-soft); color:var(--lowfreq); font-weight:600}
+.chip.g{background:var(--calm-soft); color:var(--calm)}
+.chip.o{background:var(--signal-soft); color:var(--signal)}
+.chip.b{background:var(--trace-soft); color:var(--trace)}
+
+/* ---------- 表單 ---------- */
+label.field{display:block; margin-bottom:13px}
+label.field > span{display:block; font-size:12.5px; font-weight:500; color:var(--text-2); margin-bottom:5px}
+input[type=text],input[type=number],select,textarea{
+  width:100%; font-family:var(--f-body); font-size:15px; padding:9px 11px;
+  border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--text);
+}
+input[type=number]{font-family:var(--f-mono)}
+input[type=range]{width:100%; accent-color:var(--signal)}
+.switch{display:flex; align-items:flex-start; gap:11px; padding:11px 0; border-bottom:1px solid var(--line-soft)}
+.switch:last-of-type{border-bottom:none}
+.switch input{width:19px; height:19px; margin:2px 0 0; accent-color:var(--signal); flex:none}
+.switch .t{flex:1}
+.switch .t b{display:block; font-weight:600; font-size:14px}
+
+/* ---------- 底部導覽 ---------- */
+.nav{
+  position:fixed; left:0; right:0; bottom:0; z-index:40;
+  display:grid; grid-template-columns:repeat(5,1fr);
+  background:color-mix(in srgb, var(--surface) 94%, transparent);
+  backdrop-filter:blur(12px); border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.nav button{
+  background:none; border:none; padding:9px 2px 10px; color:var(--text-3);
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  font-size:10.5px; font-weight:500; border-top:2px solid transparent; margin-top:-1px;
+}
+.nav button.on{color:var(--signal); border-top-color:var(--signal)}
+.nav svg{width:19px; height:19px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round}
+
+.page{display:none; padding-top:14px}
+.page.on{display:block}
+.note{background:var(--signal-soft); border:1px solid color-mix(in srgb,var(--signal) 28%, transparent); border-radius:var(--r); padding:12px 13px; font-size:13px; line-height:1.55}
+.note b{color:var(--signal)}
+.note.info{background:var(--trace-soft); border-color:color-mix(in srgb,var(--trace) 26%, transparent)}
+.note.info b{color:var(--trace)}
+.empty{text-align:center; padding:40px 20px; color:var(--text-3); font-size:13.5px}
+table{width:100%; border-collapse:collapse; font-size:12.5px}
+th,td{text-align:left; padding:6px 8px; border-bottom:1px solid var(--line-soft)}
+th{font-family:var(--f-display); font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--text-3); font-weight:600}
+td.n{font-family:var(--f-mono); font-variant-numeric:tabular-nums; text-align:right}
+.scroll-x{overflow-x:auto}
+audio{width:100%; height:36px; margin-top:9px}
+.hint{font-size:11.5px; color:var(--text-3); margin-top:4px; line-height:1.5}
+@media (prefers-reduced-motion: reduce){*{animation:none !important; transition:none !important}}
+@media (max-width:380px){ .big{font-size:54px} .stats{grid-template-columns:repeat(2,1fr)} }
+</style>
+
+<div id="app">
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span>低頻噪音記錄儀</div>
+    <div class="spacer"></div>
+    <div class="clock mono" id="clock">--:--:--</div>
+  </div>
+
+  <!-- ============ 監測 ============ -->
+  <section class="page on" id="p-live">
+    <div class="stack">
+
+      <div class="card pad readout">
+        <div class="grid3">
+          <div>
+            <div class="eyebrow" style="margin-bottom:5px">目前音量 dB(Z)</div>
+            <div class="big" id="bigZ">--<span class="u">dB</span></div>
+          </div>
+          <div class="subreads">
+            <div class="sub"><span class="k">Z 線性</span><span class="bar z"><i id="barZ"></i></span><span class="v" id="valZ">--</span></div>
+            <div class="sub"><span class="k">C 加權</span><span class="bar c"><i id="barC"></i></span><span class="v" id="valC">--</span></div>
+            <div class="sub"><span class="k">A 加權</span><span class="bar a"><i id="barA"></i></span><span class="v" id="valA">--</span></div>
+          </div>
+        </div>
+
+        <div class="cma">
+          <div class="cma-head">
+            <div><span class="eyebrow">低頻主導指標　C − A</span></div>
+            <div class="cma-val" id="cmaVal">--</div>
+          </div>
+          <div class="cma-scale">
+            <div class="cma-track"></div>
+            <div class="cma-needle" id="cmaNeedle" style="left:0%"></div>
+          </div>
+          <div class="cma-ticks">
+            <span style="left:0%">0</span><span style="left:25%">10</span>
+            <span style="left:50%">20</span><span style="left:75%">30</span><span style="left:100%">40</span>
+          </div>
+          <div style="margin-top:7px; display:flex; align-items:center; gap:9px; flex-wrap:wrap">
+            <span class="verdict v-norm" id="cmaVerdict">等待訊號</span>
+            <span class="tiny" id="peakHz" style="font-family:var(--f-mono)">主頻 -- Hz</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-block" id="btnRun">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
+        <span id="btnRunTxt">開始監測</span>
+      </button>
+      <div id="micErr"></div>
+
+      <div class="card pad">
+        <div class="row" style="margin-bottom:9px">
+          <div class="eyebrow">即時頻譜　0 – 500 Hz</div>
+          <div class="spacer" style="flex:1"></div>
+          <span class="tiny mono" id="specInfo">—</span>
+        </div>
+        <div class="canvas-wrap"><canvas id="cvSpec" height="150"></canvas></div>
+        <div class="hint">水錘與管路共振會在 20–150 Hz 出現<b style="color:var(--lowfreq)">固定位置的窄峰</b>；腳步聲與撞擊聲是寬頻、位置不固定。紫色區為低頻帶。</div>
+      </div>
+
+      <div class="card pad">
+        <div class="row" style="margin-bottom:9px">
+          <div class="eyebrow">近 3 分鐘音量軌跡</div>
+          <div class="spacer" style="flex:1"></div>
+          <span class="tiny mono" id="l90Info">底噪 -- dB</span>
+        </div>
+        <div class="canvas-wrap"><canvas id="cvTrace" height="110"></canvas></div>
+        <div class="legend tiny">
+          <span><i style="background:var(--trace)"></i>dB(Z)</span>
+          <span><i style="background:var(--lowfreq)"></i>dB(C)</span>
+          <span><i style="background:var(--calm)"></i>dB(A)</span>
+          <span><i style="background:var(--signal)"></i>觸發門檻</span>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><span class="n" id="stEvents">0</span><span class="l">事件數</span></div>
+        <div class="stat"><span class="n" id="stDur">0:00</span><span class="l">已監測</span></div>
+        <div class="stat"><span class="n" id="stLmax">--</span><span class="l">最大 dB(Z)</span></div>
+        <div class="stat"><span class="n" id="stL90">--</span><span class="l">背景 L90</span></div>
+      </div>
+
+      <button class="btn btn-block" id="btnMark">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        現在聽到了 — 手動標記
+      </button>
+      <p class="hint" style="margin-top:-4px">自動門檻沒抓到、但你確實聽見的時候按這個。會存下前後各數秒的完整資料。</p>
+
+      <div class="card pad">
+        <div class="eyebrow" style="margin-bottom:3px">量測位置</div>
+        <p class="tiny" style="margin-bottom:8px">只有一支手機時，換位置分次測、比較同類事件的音量大小，最響的位置最接近聲源。</p>
+        <input type="text" id="spotInput" placeholder="例：客廳沙發旁／系統櫃前／主臥靠牆" style="margin-bottom:13px">
+        <div class="eyebrow" style="margin-bottom:3px">情境標記</div>
+        <p class="tiny" style="margin-bottom:8px">做了什麼就按一下，會標在趨勢圖的時間軸上。<b>木作「趴」一聲多半來自熱脹冷縮</b>，跟開關冷氣後的降溫升溫高度相關——不標記就看不出這層關係。</p>
+        <div class="markgrid">
+          <button class="btn btn-sm" data-mark="開冷氣">開冷氣</button>
+          <button class="btn btn-sm" data-mark="關冷氣">關冷氣</button>
+          <button class="btn btn-sm" data-mark="關總水閥">關總水閥</button>
+          <button class="btn btn-sm" data-mark="開總水閥">開總水閥</button>
+          <button class="btn btn-sm" data-mark="樓上用水">樓上用水</button>
+          <button class="btn btn-sm" data-mark="__custom">其他…</button>
+        </div>
+        <div id="customMark" class="row" style="display:none; margin-top:8px; gap:7px">
+          <input type="text" id="customMarkInput" placeholder="標記內容" maxlength="30">
+          <button class="btn btn-sm" id="customMarkOk" style="flex:none">加入</button>
+        </div>
+        <div id="markList" class="marklist"></div>
+      </div>
+
+      <div class="card pad">
+        <div class="eyebrow" style="margin-bottom:3px">敲擊指紋 — 找出聲音從哪裡來</div>
+        <p class="tiny" style="margin-bottom:9px">
+          單支手機測不出方位（低頻的波長有好幾公尺，遠大於手機兩顆麥克風的間距，物理上解不出方向）。
+          可行的做法是比對<b>共振指紋</b>：每個結構被敲擊時都會在自己的固有頻率上響，那組頻率就是它的身分證。
+          把可疑的地方各敲一次存成參考，之後自動抓到的每一聲都會告訴你最像哪一個。
+        </p>
+        <div class="row" style="gap:7px">
+          <input type="text" id="refName" placeholder="例：系統櫃門板／餐桌桌面／天花板" maxlength="20">
+          <button class="btn btn-sm btn-primary" id="btnRef" style="flex:none">錄製</button>
+        </div>
+        <p class="hint">按下後有 4 秒，<b>用指節敲擊該處一到兩下</b>。敲的時候手機放在平常的量測位置別移動，這樣傳遞路徑才和真實事件一致。</p>
+        <div id="refList" class="reflist"></div>
+      </div>
+
+      <div class="note" id="wakeNote">
+        <b>掛整晚前先確認：</b>手機插著電、螢幕保持開啟（本頁會自動請求防止休眠）。瀏覽器一旦被系統休眠就會停止收音，這是網頁版的先天限制——打包成 App 之後才能真正背景執行。
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 事件 ============ -->
+  <section class="page" id="p-events">
+    <div class="stack">
+      <div class="row">
+        <h2>事件記錄</h2>
+        <div class="spacer" style="flex:1"></div>
+        <select id="evFilter" style="width:auto; font-size:13px; padding:6px 9px">
+          <option value="all">全部類型</option>
+          <option value="lowfreq">低頻共振</option>
+          <option value="impulse">衝擊音</option>
+          <option value="manual">手動標記</option>
+          <option value="other">未分類</option>
+        </select>
+      </div>
+      <div class="kindbar" id="kindBar"></div>
+      <div class="card" id="evList"><div class="empty">還沒有記錄。回到「監測」分頁開始收音。</div></div>
+      <button class="btn btn-primary btn-block" id="btnZip">打包全部證據（ZIP）</button>
+      <p class="hint" style="margin-top:-4px">一個壓縮檔內含：摘要報告、事件明細 CSV、完整 JSON、以及每個事件的 WAV 錄音。可整包寄給建商或聲學技師。</p>
+      <div class="row" style="gap:8px">
+        <button class="btn btn-sm" id="btnCsv">只要 CSV</button>
+        <button class="btn btn-sm" id="btnJson">只要 JSON</button>
+        <div class="spacer" style="flex:1"></div>
+        <button class="btn btn-sm" id="btnClear" style="color:var(--signal)">清空</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 圖表 ============ -->
+  <section class="page" id="p-charts">
+    <div class="stack">
+      <h2>趨勢分析</h2>
+      <div class="card pad">
+        <div class="eyebrow" style="margin-bottom:3px">事件的時段分布</div>
+        <p class="tiny" style="margin-bottom:9px">每天的哪個鐘點最常發生。若集中在早晚洗澡、沖廁時段，就是指向用水行為的直接證據。</p>
+        <div class="canvas-wrap"><canvas id="cvHour" height="140"></canvas></div>
+      </div>
+      <div class="card pad">
+        <div class="eyebrow" style="margin-bottom:3px">音量趨勢線</div>
+        <p class="tiny" style="margin-bottom:9px">整段監測期間的音量變化，橘點為偵測到的事件。</p>
+        <div class="canvas-wrap"><canvas id="cvTrend" height="150"></canvas></div>
+        <div class="legend tiny">
+          <span><i style="background:var(--trace)"></i>dB(Z) 每秒</span>
+          <span><i style="background:var(--calm)"></i>dB(A)</span>
+          <span><i style="background:var(--signal)"></i>事件</span>
+        </div>
+      </div>
+      <div class="card pad">
+        <div class="eyebrow" style="margin-bottom:3px">事件主頻分布</div>
+        <p class="tiny" style="margin-bottom:9px">每個事件能量最強的頻率。<b>若多數事件擠在同一個頻率附近，那就是共振</b>——共振腔（管路）的尺寸固定，頻率才會固定。</p>
+        <div class="canvas-wrap"><canvas id="cvFreq" height="130"></canvas></div>
+      </div>
+      <div class="card pad">
+        <div class="eyebrow" style="margin-bottom:3px">平均事件頻譜</div>
+        <p class="tiny" style="margin-bottom:9px">所有事件頻譜的疊加平均，比單一事件更能看出穩定的共振峰。</p>
+        <div class="canvas-wrap"><canvas id="cvAvgSpec" height="130"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 報告 ============ -->
+  <section class="page" id="p-report">
+    <div class="stack">
+      <h2>溝通報告</h2>
+      <p class="muted">產生一份可以直接貼給建商、管委會或聲學技師的摘要。數據取自目前所有記錄。</p>
+      <div class="card pad">
+        <label class="field"><span>地點描述</span><input type="text" id="rpPlace" placeholder="例：○○社區 12 樓 A 戶　主臥室"></label>
+        <label class="field" style="margin-bottom:0"><span>量測者 / 聯絡方式</span><input type="text" id="rpWho" placeholder="選填"></label>
+      </div>
+      <button class="btn btn-primary btn-block" id="btnReport">產生報告</button>
+      <div class="card pad" id="rpOut" style="display:none">
+        <div class="scroll-x" id="rpBody"></div>
+        <div class="row" style="margin-top:13px; gap:8px">
+          <button class="btn btn-sm" id="btnCopy">複製文字</button>
+          <button class="btn btn-sm" id="btnPrint">列印 / 存 PDF</button>
+        </div>
+      </div>
+      <div class="note info">
+        <b>談判前先做這個對照實驗。</b>只有一支手機時，最有力的做法是分時段對照：<br>
+        ① 關閉自家總水閥 30 分鐘監測 → 若聲音仍在，代表不是自家管路。<br>
+        ② 請樓上在約定時間沖水／開關水龍頭，同步監測 → 看事件是否跟著出現。<br>
+        ③ 挑一段全棟最安靜的深夜時段測背景 L90 → 當成對照基準。<br>
+        每段實驗都用「手動標記」按鈕標出起訖點，報告裡就會留下時間軸。
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 設定 ============ -->
+  <section class="page" id="p-setup">
+    <div class="stack">
+      <h2>設定與校準</h2>
+
+      <div class="card pad">
+        <div class="eyebrow" style="margin-bottom:9px">分貝校準</div>
+        <div class="note" style="margin-bottom:13px">
+          <b>先讀這段。</b>手機麥克風出廠沒有聲學校準，任何 App 給的絕對分貝值都是估算。
+          未校準時：<b>絕對數值不可信</b>，但 <b>C−A 差值、峰值因數、主頻位置、事件時間分布、前後趨勢完全可信</b>——
+          而這幾樣才是判斷聲音性質與來源的關鍵。所以沒有分貝計也能用，只是報告上要標明未校準。
+        </div>
+        <label class="field">
+          <span>校準偏移量　<span class="mono" id="calVal">115</span> dB</span>
+          <input type="range" id="calSlider" min="80" max="140" step="0.5" value="115">
+        </label>
+        <p class="hint" style="margin-top:-6px">
+          這個值等於麥克風的滿刻度音壓，手機多落在 <b>110–125</b> 之間，預設 115。
+          有分貝計或另一支已校準手機的話：兩台並排對同一個穩定聲源（例如抽油煙機），
+          拖動滑桿讓上方 dB(A) 讀數與對方一致即可。
+        </p>
+        <div id="agcInfo" class="hint" style="margin-top:9px; padding-top:9px; border-top:1px dashed var(--line)">
+          麥克風處理狀態：開始監測後顯示。
+        </div>
+      </div>
+
+      <div class="card pad">
+        <div class="eyebrow" style="margin-bottom:6px">事件偵測</div>
+        <label class="field">
+          <span>觸發門檻：超過背景 L90 <span class="mono" id="thVal">10</span> dB</span>
+          <input type="range" id="thSlider" min="3" max="25" step="1" value="10">
+        </label>
+        <label class="field">
+          <span>最短持續時間 <span class="mono" id="minDurVal">0.20</span> 秒</span>
+          <input type="range" id="minDurSlider" min="0.05" max="2" step="0.05" value="0.2">
+        </label>
+        <label class="field">
+          <span>絕對下限（低於此值一律不觸發）<span class="mono" id="floorVal">35</span> dB</span>
+          <input type="range" id="floorSlider" min="20" max="70" step="1" value="35">
+        </label>
+        <p class="hint" style="margin-top:-6px">門檻是<b>相對於背景底噪</b>的，所以白天吵、深夜靜都能自動適應。抓到太多雜訊就把門檻調高。</p>
+        <div class="switch" style="border-top:1px dashed var(--line); margin-top:11px; padding-top:11px">
+          <input type="checkbox" id="optImp" checked>
+          <div class="t"><b>衝擊音偵測</b>
+            <span class="tiny">「趴」一聲往往只有 20–50 毫秒，撐不到上面的持續時間門檻，會被整個漏掉。
+            這個偵測器逐取樣追蹤真實峰值，只要音量瞬間躍升就立刻記錄。要抓木作彈跳聲、敲擊聲一定要開。</span></div>
+        </div>
+        <label class="field" style="margin-bottom:0">
+          <span>衝擊靈敏度：瞬間躍升超過 <span class="mono" id="impVal">14</span> dB 即記錄</span>
+          <input type="range" id="impSlider" min="6" max="25" step="1" value="14">
+        </label>
+        <p class="hint">數字越小越敏感。抓到太多關門、腳步聲就調高；完全抓不到你聽見的那一聲就調低。</p>
+      </div>
+
+      <div class="card pad">
+        <div class="eyebrow" style="margin-bottom:3px">錄音</div>
+        <div class="switch">
+          <input type="checkbox" id="optRec" checked>
+          <div class="t"><b>事件自動錄音</b>
+            <span class="tiny">存下「事發前 4 秒 + 事件全程 + 事後 2 秒」的 WAV，16 kHz 單聲道，約 32 KB/秒。
+            會錄到家人講話，介意就關掉——關掉之後數據與圖表照常運作。</span></div>
+        </div>
+        <div class="switch">
+          <input type="checkbox" id="optWake" checked>
+          <div class="t"><b>防止螢幕休眠</b>
+            <span class="tiny">監測時保持螢幕開啟，避免瀏覽器被系統暫停而漏錄。請同時插電。</span></div>
+        </div>
+        <div class="switch">
+          <input type="checkbox" id="optBeepGuard" checked>
+          <div class="t"><b>過載保護提示</b>
+            <span class="tiny">音量接近麥克風飽和時把讀數標成橘色，提醒該遠離聲源，否則數值會被削平。</span></div>
+        </div>
+      </div>
+
+      <div class="card pad">
+        <div class="eyebrow" style="margin-bottom:9px">儲存狀態</div>
+        <div id="storeInfo" class="mono" style="font-size:12.5px; color:var(--text-2)">—</div>
+      </div>
+
+      <div class="note info">
+        <b>為什麼要看 C−A？</b>A 加權模仿人耳對低頻不敏感的特性，會把 50 Hz 的能量壓掉將近 30 dB。
+        水錘共振恰好落在那裡——用一般噪音 App 測會顯示「才 45 分貝，沒超標」，
+        那份數據反而會被拿來證明你沒事。C 加權保留低頻，
+        <b>兩者的差值愈大，代表能量愈集中在低頻</b>，這是國際上判定低頻噪音問題的通用做法。
+      </div>
+    </div>
+  </section>
+</div>
+
+<nav class="nav" id="nav">
+  <button data-p="live" class="on"><svg viewBox="0 0 24 24"><path d="M3 12h3l3-8 4 16 3-8h5"/></svg>監測</button>
+  <button data-p="events"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/><circle cx="19.5" cy="18" r="1.6" fill="currentColor" stroke="none"/></svg>事件</button>
+  <button data-p="charts"><svg viewBox="0 0 24 24"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 16v-5M12.5 16V8M17 16v-3"/></svg>圖表</button>
+  <button data-p="report"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 14h6M9 17h4"/></svg>報告</button>
+  <button data-p="setup"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 9 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 4.6 9a1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z"/></svg>設定</button>
+</nav>
+
+<script>
+"use strict";
+/* =========================================================================
+   低頻噪音記錄儀
+   Z / C / A 三軌同時量測 + FFT 主頻 + 事件自動偵測 + 前置緩衝錄音
+   ========================================================================= */
+
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const pad2 = n => String(n).padStart(2,'0');
+const fmtClock = t => { const d=new Date(t); return pad2(d.getHours())+':'+pad2(d.getMinutes())+':'+pad2(d.getSeconds()); };
+const fmtDate  = t => { const d=new Date(t); return (d.getMonth()+1)+'/'+d.getDate(); };
+const fmtFull  = t => { const d=new Date(t); return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())+' '+fmtClock(t); };
+const fmtDur   = s => { s=Math.round(s); return Math.floor(s/60)+':'+pad2(s%60); };
+
+/* ---------- IEC 61672 頻率加權 ---------- */
+function aWeightDb(f){
+  if(f<=0) return -200;
+  const f2=f*f, f4=f2*f2;
+  const num = 12194*12194 * f4;
+  const den = (f2+20.6*20.6) * Math.sqrt((f2+107.7*107.7)*(f2+737.9*737.9)) * (f2+12194*12194);
+  return 20*Math.log10(num/den) + 2.00;
+}
+function cWeightDb(f){
+  if(f<=0) return -200;
+  const f2=f*f;
+  const num = 12194*12194 * f2;
+  const den = (f2+20.6*20.6) * (f2+12194*12194);
+  return 20*Math.log10(num/den) + 0.06;
+}
+
+/* ---------- 設定 ---------- */
+const CFG_KEY = 'lfnr.cfg.v2';
+const cfg = Object.assign({
+  // 115 dB 是 dBFS→SPL 偏移量的常見起點（開源分貝計慣用值；MEMS 麥克風推算多落在 110–125）
+  cal: 115, thresh: 10, minDur: 0.2, floor: 35,
+  impOn: true, impDelta: 14,
+  rec: true, wake: true, clipGuard: true, place:'', who:'', spot:''
+}, JSON.parse(localStorage.getItem(CFG_KEY) || '{}'));
+function saveCfg(){ try{ localStorage.setItem(CFG_KEY, JSON.stringify(cfg)); }catch(e){} }
+
+/* ---------- IndexedDB ---------- */
+const DB_NAME='lfnr', DB_VER=1;
+let db=null;
+function openDB(){
+  return new Promise((res,rej)=>{
+    const r = indexedDB.open(DB_NAME, DB_VER);
+    r.onupgradeneeded = e => {
+      const d = e.target.result;
+      if(!d.objectStoreNames.contains('events')) d.createObjectStore('events',{keyPath:'id'});
+      if(!d.objectStoreNames.contains('samples')) d.createObjectStore('samples',{keyPath:'t'});
+      if(!d.objectStoreNames.contains('audio'))  d.createObjectStore('audio',{keyPath:'id'});
+    };
+    r.onsuccess = e => { db = e.target.result; res(db); };
+    r.onerror = e => rej(e.target.error);
+  });
+}
+function tx(store, mode='readonly'){ return db.transaction(store, mode).objectStore(store); }
+function idbPut(store, val){ return new Promise((res,rej)=>{ const r=tx(store,'readwrite').put(val); r.onsuccess=()=>res(); r.onerror=e=>rej(e.target.error); }); }
+function idbGet(store, key){ return new Promise((res,rej)=>{ const r=tx(store).get(key); r.onsuccess=e=>res(e.target.result); r.onerror=e=>rej(e.target.error); }); }
+function idbAll(store){ return new Promise((res,rej)=>{ const r=tx(store).getAll(); r.onsuccess=e=>res(e.target.result||[]); r.onerror=e=>rej(e.target.error); }); }
+function idbClear(store){ return new Promise((res,rej)=>{ const r=tx(store,'readwrite').clear(); r.onsuccess=()=>res(); r.onerror=e=>rej(e.target.error); }); }
+
+/* ---------- 狀態 ---------- */
+const S = {
+  running:false, ctx:null, stream:null, analyser:null, src:null, worklet:null, proc:null,
+  fftBuf:null, tdBuf:null, binHz:1, nBins:0,
+  wWeights:null,          // 預算好的 A/C 加權線性增益
+  startedAt:0, lastSecond:0,
+  dbZ:-Infinity, dbA:-Infinity, dbC:-Infinity, cma:0, peakHz:0, clipping:false,
+  trace:[],               // 近 3 分鐘 {t,z,c,a}
+  secAgg:null,            // 每秒累積
+  l90ring:[],             // 近 10 分鐘每秒 dBZ
+  l90:null,
+  events:[], samples:[], sampleQueue:[],
+  inEvent:null, aboveSince:0, belowSince:0,
+  lmaxSession:-Infinity, evSeq:0,
+  wakeLock:null, markers:[], refs:[], refCapture:null, agc:null,
+  // 真實峰值追蹤（在 PCM 層計算，不會漏掉 20 ms 的瞬間脈衝）
+  blockPeak:0, blockSum:0, blockN:0, peakDb:-Infinity, crest:0, slowDb:-Infinity,
+  impulseArmed:true, lastImpulse:0,
+  // 錄音環形緩衝（16 kHz）
+  RS:16000, ring:null, ringLen:0, ringPos:0, ringFilled:false,
+  recActive:null, decim:3, decimAcc:0, decimCnt:0
+};
+const SPEC_BINS = 140;   // 事件頻譜快照解析度（0–500 Hz）
+const SPEC_MAXHZ = 500;
+
+/* =========================================================================
+   音訊啟動
+   ========================================================================= */
+async function start(){
+  $('#micErr').innerHTML = '';
+  try{
+    S.stream = await navigator.mediaDevices.getUserMedia({
+      audio:{
+        echoCancellation:false, noiseSuppression:false, autoGainControl:false,
+        channelCount:1,
+        // 部分 Android 需要非標準旗標才會真的關掉處理
+        googEchoCancellation:false, googAutoGainControl:false, googNoiseSuppression:false,
+        googHighpassFilter:false, googTypingNoiseDetection:false
+      }, video:false
+    });
+  }catch(err){
+    showMicError(err); return;
+  }
+
+  // 回讀實際生效的設定：Android 常常忽略 autoGainControl:false。
+  // 自動增益一旦還開著，大聲會被壓低、安靜會被抬高，校準偏移量失去意義，整份數據不可比較。
+  try{
+    const tr = S.stream.getAudioTracks()[0];
+    S.agc = tr && tr.getSettings ? tr.getSettings() : null;
+    if(S.agc && S.agc.autoGainControl === true){
+      $('#micErr').innerHTML = '<div class="note"><b>這支手機沒有關掉自動增益（AGC）。</b>'+
+        '系統仍在自動調整麥克風靈敏度，音量的絕對值與不同時間點的比較都會失真。<br>'+
+        'C−A 差值與主頻仍可參考，但請在報告中註明。若手機有「錄音」或「開發者選項」相關設定，'+
+        '可嘗試關閉語音增強後重新開始。</div>';
+    }
+  }catch(e){ S.agc = null; }
+  renderAgc();
+
+  S.ctx = new (window.AudioContext||window.webkitAudioContext)();
+  if(S.ctx.state === 'suspended') await S.ctx.resume();
+
+  S.src = S.ctx.createMediaStreamSource(S.stream);
+  S.analyser = S.ctx.createAnalyser();
+  S.analyser.fftSize = 8192;
+  S.analyser.smoothingTimeConstant = 0;
+  S.analyser.minDecibels = -140;
+  S.analyser.maxDecibels = 0;
+  S.src.connect(S.analyser);
+
+  S.nBins = S.analyser.frequencyBinCount;
+  S.fftBuf = new Float32Array(S.nBins);
+  S.tdBuf  = new Float32Array(S.analyser.fftSize);
+  S.binHz  = S.ctx.sampleRate / S.analyser.fftSize;
+
+  // 預算加權增益（線性功率倍率）
+  S.wWeights = { a:new Float32Array(S.nBins), c:new Float32Array(S.nBins) };
+  for(let i=0;i<S.nBins;i++){
+    const f = i*S.binHz;
+    S.wWeights.a[i] = Math.pow(10, aWeightDb(f)/10);
+    S.wWeights.c[i] = Math.pow(10, cWeightDb(f)/10);
+  }
+
+  // 錄音環形緩衝：8 秒 @16 kHz
+  S.ringLen = S.RS*8; S.ring = new Float32Array(S.ringLen); S.ringPos=0; S.ringFilled=false;
+  S.decim = Math.max(1, Math.round(S.ctx.sampleRate / S.RS));
+  S.RS = Math.round(S.ctx.sampleRate / S.decim);
+  await setupCapture();
+
+  S.running = true; S.startedAt = Date.now(); S.lastSecond = 0;
+  S.trace=[]; S.l90ring=[]; S.l90=null; S.lmaxSession=-Infinity;
+  document.body.classList.add('running');
+  $('#btnRunTxt').textContent = '停止監測';
+  $('#btnRun').classList.remove('btn-primary'); $('#btnRun').classList.add('btn-stop');
+  if(cfg.wake) requestWake();
+  loop();
+}
+
+async function setupCapture(){
+  // 優先 AudioWorklet；失敗退回 ScriptProcessor
+  const code = `
+    class Cap extends AudioWorkletProcessor{
+      constructor(){ super(); this.buf=new Float32Array(2048); this.n=0; }
+      process(inputs){
+        const ch = inputs[0] && inputs[0][0];
+        if(ch){
+          for(let i=0;i<ch.length;i++){
+            this.buf[this.n++] = ch[i];
+            if(this.n === this.buf.length){ this.port.postMessage(this.buf.slice(0)); this.n=0; }
+          }
+        }
+        return true;
+      }
+    }
+    registerProcessor('cap', Cap);`;
+  try{
+    const url = URL.createObjectURL(new Blob([code],{type:'application/javascript'}));
+    await S.ctx.audioWorklet.addModule(url);
+    URL.revokeObjectURL(url);
+    S.worklet = new AudioWorkletNode(S.ctx,'cap');
+    S.worklet.port.onmessage = e => onPcm(e.data);
+    S.src.connect(S.worklet);
+    // worklet 不接 destination，避免回授
+  }catch(err){
+    const sp = S.ctx.createScriptProcessor(4096,1,1);
+    sp.onaudioprocess = e => onPcm(e.inputBuffer.getChannelData(0));
+    S.src.connect(sp);
+    const mute = S.ctx.createGain(); mute.gain.value = 0;
+    sp.connect(mute); mute.connect(S.ctx.destination);
+    S.proc = sp;
+  }
+}
+
+/* PCM → 降採樣 → 環形緩衝 / 事件錄音 */
+function onPcm(block){
+  if(!S.ring) return;
+  for(let i=0;i<block.length;i++){
+    // 逐樣本追蹤真實峰值：FFT 每 80 ms 才取一次窗，會漏掉 20–50 ms 的「趴」一聲
+    const av = block[i] < 0 ? -block[i] : block[i];
+    if(av > S.blockPeak) S.blockPeak = av;
+    S.blockSum += block[i]*block[i]; S.blockN++;
+
+    S.decimAcc += block[i]; S.decimCnt++;
+    if(S.decimCnt >= S.decim){
+      const v = S.decimAcc / S.decimCnt;
+      S.decimAcc = 0; S.decimCnt = 0;
+      S.ring[S.ringPos++] = v;
+      if(S.ringPos >= S.ringLen){ S.ringPos = 0; S.ringFilled = true; }
+      if(S.recActive){
+        const r = S.recActive;
+        if(r.n < r.buf.length) r.buf[r.n++] = v;
+        if(r.closing){ r.tail--; if(r.tail<=0 || r.n>=r.buf.length) finalizeRec(); }
+        else if(r.n >= r.buf.length) finalizeRec();
+      }
+    }
+  }
+}
+function ringTake(seconds){
+  const want = Math.min(Math.round(seconds*S.RS), S.ringFilled ? S.ringLen : S.ringPos);
+  const out = new Float32Array(want);
+  let p = S.ringPos - want;
+  for(let i=0;i<want;i++){ let j=p+i; if(j<0) j+=S.ringLen; out[i]=S.ring[j]; }
+  return out;
+}
+function beginRec(){
+  if(!cfg.rec || S.recActive) return;
+  const pre = ringTake(4);
+  const max = Math.round(S.RS*25);
+  const buf = new Float32Array(max);
+  buf.set(pre.subarray(0, Math.min(pre.length,max)));
+  S.recActive = { buf, n:Math.min(pre.length,max), closing:false, tail:0, id:null };
+}
+function endRec(eventId){
+  if(!S.recActive) return;
+  S.recActive.id = eventId;
+  S.recActive.closing = true;
+  S.recActive.tail = Math.round(S.RS*2);   // 事後再收 2 秒
+}
+async function finalizeRec(){
+  const r = S.recActive; S.recActive = null;
+  if(!r || !r.id) return;
+  const wav = encodeWAV(r.buf.subarray(0,r.n), S.RS);
+  try{ await idbPut('audio',{id:r.id, blob:wav, bytes:wav.size}); }catch(e){}
+  const ev = S.events.find(x=>x.id===r.id);
+  if(ev){ ev.audio = true; ev.audioBytes = wav.size; await idbPut('events', ev); renderEvents(); }
+  updateStore();
+}
+function encodeWAV(samples, rate){
+  const n = samples.length, buf = new ArrayBuffer(44+n*2), v = new DataView(buf);
+  const ws = (o,s)=>{ for(let i=0;i<s.length;i++) v.setUint8(o+i, s.charCodeAt(i)); };
+  ws(0,'RIFF'); v.setUint32(4,36+n*2,true); ws(8,'WAVE'); ws(12,'fmt ');
+  v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+  v.setUint32(24,rate,true); v.setUint32(28,rate*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true);
+  ws(36,'data'); v.setUint32(40,n*2,true);
+  let o=44; for(let i=0;i<n;i++){ const s=clamp(samples[i],-1,1); v.setInt16(o, s<0?s*0x8000:s*0x7FFF, true); o+=2; }
+  return new Blob([buf],{type:'audio/wav'});
+}
+
+function showMicError(err){
+  const name = err && err.name || 'Error';
+  let why = '', fix = '';
+  if(name==='NotAllowedError'||name==='SecurityError'){
+    why = '瀏覽器拒絕了麥克風權限。';
+    fix = '點網址列左邊的鎖頭圖示 → 權限 → 允許麥克風，然後重新整理。若這頁嵌在其他頁面中，請改用「在新分頁開啟」。';
+  }else if(name==='NotFoundError'){ why='找不到麥克風裝置。'; fix='確認手機麥克風沒被其他 App 佔用（通話、錄音、視訊）。'; }
+  else if(name==='NotReadableError'){ why='麥克風被其他程式佔用。'; fix='關掉正在錄音或通話的 App 再試。'; }
+  else { why = name+'：'+(err&&err.message||''); fix='請用 Chrome 開啟，並確認網址是 https。'; }
+  $('#micErr').innerHTML = '<div class="note"><b>無法開啟麥克風。</b>'+why+'<br>'+fix+'</div>';
+}
+
+async function requestWake(){
+  try{ if('wakeLock' in navigator) S.wakeLock = await navigator.wakeLock.request('screen'); }catch(e){}
+}
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible' && S.running && cfg.wake) requestWake(); });
+
+function stop(){
+  S.running = false;
+  document.body.classList.remove('running');
+  $('#btnRunTxt').textContent = '開始監測';
+  $('#btnRun').classList.add('btn-primary'); $('#btnRun').classList.remove('btn-stop');
+  if(S.inEvent) closeEvent(Date.now());
+  try{ S.stream && S.stream.getTracks().forEach(t=>t.stop()); }catch(e){}
+  try{ S.worklet && S.worklet.disconnect(); S.proc && S.proc.disconnect(); S.src && S.src.disconnect(); }catch(e){}
+  try{ S.ctx && S.ctx.close(); }catch(e){}
+  try{ S.wakeLock && S.wakeLock.release(); }catch(e){}
+  S.wakeLock=null; S.ctx=null;
+  flushSamples();
+}
+
+/* =========================================================================
+   主量測迴圈
+   ========================================================================= */
+function loop(){
+  if(!S.running) return;
+  measure();
+  requestAnimationFrame(loop);
+}
+
+let lastMeasure = 0;
+function measure(){
+  const now = performance.now();
+  if(now - lastMeasure < 80) return;   // ~12.5 Hz
+  lastMeasure = now;
+
+  const A = S.analyser;
+  A.getFloatTimeDomainData(S.tdBuf);
+  let sum=0, peak=0;
+  for(let i=0;i<S.tdBuf.length;i++){ const s=S.tdBuf[i]; sum+=s*s; const a=Math.abs(s); if(a>peak) peak=a; }
+  const rms = Math.sqrt(sum/S.tdBuf.length);
+  const dbfs = 20*Math.log10(rms + 1e-12);
+
+  // PCM 層真實峰值：涵蓋上次量測以來的每一個樣本，不會漏掉瞬間脈衝
+  let pk = S.blockPeak;
+  const pRms = S.blockN ? Math.sqrt(S.blockSum/S.blockN) : rms;
+  S.blockPeak = 0; S.blockSum = 0; S.blockN = 0;
+  if(pk < peak) pk = peak;
+  S.clipping = pk > 0.985;
+  const pkDbfs = 20*Math.log10(pk + 1e-12);
+  S.crest = pkDbfs - 20*Math.log10(pRms + 1e-12);   // 峰值因數：衝擊音高、持續嗡鳴低
+
+  A.getFloatFrequencyData(S.fftBuf);
+  let pZ=0, pA=0, pC=0, maxLow=-Infinity, maxLowI=0;
+  const iMin = Math.max(1, Math.floor(8/S.binHz));
+  const iMax = Math.min(S.nBins-1, Math.floor(20000/S.binHz));
+  const iLowMax = Math.min(S.nBins-1, Math.floor(SPEC_MAXHZ/S.binHz));
+  for(let i=iMin;i<=iMax;i++){
+    const p = Math.pow(10, S.fftBuf[i]/10);
+    pZ += p; pA += p*S.wWeights.a[i]; pC += p*S.wWeights.c[i];
+    if(i<=iLowMax && S.fftBuf[i] > maxLow && i*S.binHz >= 15){ maxLow=S.fftBuf[i]; maxLowI=i; }
+  }
+  const dA = pZ>0 ? 10*Math.log10(pA/pZ) : 0;
+  const dC = pZ>0 ? 10*Math.log10(pC/pZ) : 0;
+
+  S.dbZ = dbfs + cfg.cal;
+  S.dbA = S.dbZ + dA;
+  S.dbC = S.dbZ + dC;
+  S.cma = dC - dA;
+  S.peakHz = maxLowI*S.binHz;
+  S.peakDb = pkDbfs + cfg.cal;
+
+  // 衝擊音判定：拿「還沒被這一聲拉高的」慢速基線來比，否則會自己遮蔽自己
+  const impulse = cfg.impOn && isFinite(S.slowDb) &&
+                  (S.peakDb - S.slowDb) >= cfg.impDelta &&
+                  S.peakDb >= cfg.floor + 5 && S.crest >= 11;
+  S.slowDb = isFinite(S.slowDb) ? S.slowDb*0.88 + S.dbZ*0.12 : S.dbZ;
+
+  const t = Date.now();
+  S.trace.push({t, z:S.dbZ, c:S.dbC, a:S.dbA});
+  while(S.trace.length && t - S.trace[0].t > 180000) S.trace.shift();
+
+  // 每秒聚合
+  if(!S.secAgg || t - S.secAgg.t0 >= 1000) rollSecond(t);
+  const g = S.secAgg;
+  g.n++; g.pz += Math.pow(10,S.dbZ/10); g.pa += Math.pow(10,S.dbA/10); g.pc += Math.pow(10,S.dbC/10);
+  if(S.dbZ > g.max) { g.max = S.dbZ; g.maxHz = S.peakHz; }
+
+  if(S.refCapture) handleRefCapture(t);
+  detectEvent(t, impulse);
+  paintLive();
+}
+
+function rollSecond(t){
+  if(S.secAgg && S.secAgg.n>0){
+    const g = S.secAgg;
+    const z = 10*Math.log10(g.pz/g.n), a = 10*Math.log10(g.pa/g.n), c = 10*Math.log10(g.pc/g.n);
+    const rec = { t:g.t0, z:+z.toFixed(1), a:+a.toFixed(1), c:+c.toFixed(1), m:+g.max.toFixed(1), hz:Math.round(g.maxHz) };
+    S.samples.push(rec); S.sampleQueue.push(rec);
+    if(S.sampleQueue.length >= 30) flushSamples();
+    S.l90ring.push(z);
+    while(S.l90ring.length > 600) S.l90ring.shift();
+    if(S.l90ring.length >= 20){
+      const sorted = [...S.l90ring].sort((x,y)=>x-y);
+      S.l90 = sorted[Math.floor(sorted.length*0.10)];
+    }
+    if(g.max > S.lmaxSession) S.lmaxSession = g.max;
+  }
+  S.secAgg = { t0:t, n:0, pz:0, pa:0, pc:0, max:-Infinity, maxHz:0 };
+}
+function flushSamples(){
+  if(!db || !S.sampleQueue.length) return;
+  const q = S.sampleQueue; S.sampleQueue = [];
+  const st = db.transaction('samples','readwrite').objectStore('samples');
+  q.forEach(r=>{ try{ st.put(r); }catch(e){} });
+}
+
+function currentThreshold(){
+  const base = (S.l90 === null) ? cfg.floor : S.l90 + cfg.thresh;
+  return Math.max(base, cfg.floor);
+}
+
+function snapshotSpectrum(){
+  const out = new Uint8Array(SPEC_BINS);
+  const step = SPEC_MAXHZ / SPEC_BINS;
+  for(let k=0;k<SPEC_BINS;k++){
+    const f0 = k*step, f1 = (k+1)*step;
+    let i0 = Math.max(1, Math.round(f0/S.binHz)), i1 = Math.max(i0, Math.round(f1/S.binHz));
+    let m = -Infinity;
+    for(let i=i0;i<=i1 && i<S.nBins;i++) if(S.fftBuf[i]>m) m=S.fftBuf[i];
+    out[k] = clamp(Math.round((m + 140) * 1.8), 0, 255);   // -140..0 dB → 0..255
+  }
+  return out;
+}
+
+function newEvent(t0, th, kind){
+  return { t0, th, kind, pz:0, pa:0, pc:0, n:0,
+    maxZ:-Infinity, maxA:-Infinity, maxC:-Infinity, maxPeak:-Infinity, maxCrest:0,
+    maxHz:0, cmaSum:0, spec:null, specAt:-Infinity, manual:false };
+}
+/* ---------- 1/3 八音度頻帶與窄峰（tonality）判定 ---------- */
+const THIRD_OCT = [20,25,31.5,40,50,63,80,100,125,160,200,250,315,400,500];
+function thirdOctaveBands(){
+  const out = new Array(THIRD_OCT.length);
+  for(let k=0;k<THIRD_OCT.length;k++){
+    const fc = THIRD_OCT[k], lo = fc/1.1225, hi = fc*1.1225;
+    let i0 = Math.max(1, Math.round(lo/S.binHz)), i1 = Math.min(S.nBins-1, Math.round(hi/S.binHz));
+    if(i1 < i0) i1 = i0;
+    let p = 0;
+    for(let i=i0;i<=i1;i++) p += Math.pow(10, S.fftBuf[i]/10);
+    out[k] = +(10*Math.log10(p + 1e-20)).toFixed(1);
+  }
+  return out;
+}
+/* 窄峰門檻依頻率而異（NSW 噪音政策的 tonality 判準）：
+   低頻帶較寬，要突出得更多才算數，否則寬頻噪音會被誤判成共振。 */
+function findTone(bands){
+  if(!bands) return null;
+  let best = null;
+  for(let k=1;k<bands.length-1;k++){
+    const fc = THIRD_OCT[k];
+    const need = fc <= 125 ? 15 : fc <= 400 ? 8 : 5;
+    const d = bands[k] - Math.max(bands[k-1], bands[k+1]);
+    if(d >= need && (!best || d - need > best.margin))
+      best = { hz:fc, excess:+d.toFixed(1), need, margin:d-need };
+  }
+  return best;
+}
+/* 台灣電網 60 Hz：冰箱壓縮機、加壓馬達、變壓器的電磁噪音落在 60 及其倍頻，是最常見的假陽性 */
+function isMainsHum(hz){
+  if(!hz) return false;
+  return [60,120,180,240].some(f => Math.abs(hz-f) <= f*0.06);
+}
+
+/* 頻譜形狀相似度（去均值的相關係數，不受音量大小影響） */
+function specSimilarity(a, b){
+  if(!a || !b || a.length !== b.length) return 0;
+  let ma=0, mb=0;
+  for(let i=0;i<a.length;i++){ ma+=a[i]; mb+=b[i]; }
+  ma/=a.length; mb/=b.length;
+  let num=0, va=0, vb=0;
+  for(let i=0;i<a.length;i++){
+    const x=a[i]-ma, y=b[i]-mb;
+    num+=x*y; va+=x*x; vb+=y*y;
+  }
+  if(va<=0 || vb<=0) return 0;
+  return num/Math.sqrt(va*vb);
+}
+function matchRefs(spec){
+  if(!spec || !S.refs.length) return null;
+  let best=null;
+  S.refs.forEach(r=>{
+    const s = specSimilarity(spec, r.spec);
+    if(!best || s > best.sim) best = { name:r.name, sim:s };
+  });
+  return best;
+}
+
+function detectEvent(t, impulse){
+  const th = currentThreshold();
+  const over = S.dbZ >= th;
+
+  if(!S.inEvent){
+    // 衝擊音優先：「趴」一聲往往只有 20–50 ms，撐不到持續時間門檻，
+    // 走一般路徑會被整個漏掉，所以偵測到就立刻開事件。
+    if(impulse && t - S.lastImpulse > 500){
+      S.lastImpulse = t;
+      S.inEvent = newEvent(t - 120, th, 'impulse');
+      beginRec();
+    } else if(over){
+      if(!S.aboveSince) S.aboveSince = t;
+      if(t - S.aboveSince >= cfg.minDur*1000){
+        S.inEvent = newEvent(S.aboveSince, th, 'sustained');
+        beginRec();
+      }
+    } else S.aboveSince = 0;
+  }
+
+  if(S.inEvent){
+    const e = S.inEvent;
+    e.n++; e.pz += Math.pow(10,S.dbZ/10); e.pa += Math.pow(10,S.dbA/10); e.pc += Math.pow(10,S.dbC/10);
+    e.cmaSum += S.cma;
+    if(S.dbZ > e.maxZ){ e.maxZ = S.dbZ; e.maxHz = S.peakHz; }
+    if(S.dbA > e.maxA) e.maxA = S.dbA;
+    if(S.dbC > e.maxC) e.maxC = S.dbC;
+    if(S.peakDb > e.maxPeak) e.maxPeak = S.peakDb;
+    if(S.crest > e.maxCrest) e.maxCrest = S.crest;
+    if(S.dbZ > e.specAt){ e.specAt = S.dbZ; e.spec = snapshotSpectrum(); e.bands = thirdOctaveBands(); }
+
+    const tail = e.kind === 'impulse' ? 500 : 1500;
+    if(!over){
+      if(!S.belowSince) S.belowSince = t;
+      if(t - S.belowSince >= tail || t - e.t0 > 60000) closeEvent(t - tail);
+    } else S.belowSince = 0;
+  }
+}
+
+/* 事件分類：衝擊 / 低頻共振 / 其他
+   crest（峰值因數）是關鍵——敲擊、爆裂聲的瞬時峰值遠高於有效值，
+   持續的低頻嗡鳴則兩者接近。 */
+function classifyEvent(e){
+  if(e.manual) return 'manual';
+  if(e.crest >= 14 && e.dur <= 1.5) return 'impulse';
+  if(e.cma >= 15) return 'lowfreq';
+  if(e.crest >= 12 && e.dur <= 2) return 'impulse';
+  return 'other';
+}
+const KIND_LABEL = { impulse:'衝擊音', lowfreq:'低頻共振', manual:'手動標記', other:'一般' };
+
+async function closeEvent(t1){
+  const e = S.inEvent; S.inEvent=null; S.aboveSince=0; S.belowSince=0;
+  if(!e) return;
+  const dur = Math.max(0.1, (t1 - e.t0)/1000);
+  const id = 'e'+e.t0+'_'+(S.evSeq++);
+  const rec = {
+    id, t0:e.t0, t1, dur:+dur.toFixed(2),
+    lmaxZ:+e.maxZ.toFixed(1), lmaxA:+e.maxA.toFixed(1), lmaxC:+e.maxC.toFixed(1),
+    leqZ:+(10*Math.log10(e.pz/Math.max(1,e.n))).toFixed(1),
+    leqA:+(10*Math.log10(e.pa/Math.max(1,e.n))).toFixed(1),
+    leqC:+(10*Math.log10(e.pc/Math.max(1,e.n))).toFixed(1),
+    cma:+(e.cmaSum/Math.max(1,e.n)).toFixed(1),
+    peakHz:Math.round(e.maxHz), th:+e.th.toFixed(1),
+    l90:S.l90===null?null:+S.l90.toFixed(1),
+    lpeak:isFinite(e.maxPeak)?+e.maxPeak.toFixed(1):null,
+    crest:+e.maxCrest.toFixed(1),
+    spec:e.spec ? Array.from(e.spec) : null,
+    bands:e.bands || null,
+    manual:!!e.manual, note:'', audio:false, cal:cfg.cal,
+    spot:cfg.spot||''
+  };
+  rec.kind = classifyEvent(rec);
+  rec.tone = findTone(rec.bands);
+  const m = matchRefs(rec.spec);
+  if(m && m.sim >= 0.5) rec.match = { name:m.name, sim:+m.sim.toFixed(3) };
+  S.events.unshift(rec);
+  await idbPut('events', rec);
+  endRec(id);
+  renderEvents(); renderStats();
+}
+
+function manualMark(){
+  if(!S.running){ alert('請先開始監測。'); return; }
+  const t = Date.now();
+  if(S.inEvent){ S.inEvent.manual = true; return; }
+  S.inEvent = newEvent(t-1000, currentThreshold(), 'manual');
+  S.inEvent.manual = true;
+  beginRec();
+  setTimeout(()=>{ if(S.inEvent && S.inEvent.manual) closeEvent(Date.now()); }, 4000);
+  const b=$('#btnMark'); b.textContent='已標記 ✓'; setTimeout(()=>{ b.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>現在聽到了 — 手動標記'; }, 1600);
+}
+
+/* =========================================================================
+   情境標記與敲擊指紋
+   ========================================================================= */
+const MK_KEY = 'lfnr.markers.v1', REF_KEY = 'lfnr.refs.v1';
+function loadLocal(){
+  try{ S.markers = JSON.parse(localStorage.getItem(MK_KEY) || '[]'); }catch(e){ S.markers = []; }
+  try{ S.refs = JSON.parse(localStorage.getItem(REF_KEY) || '[]'); }catch(e){ S.refs = []; }
+}
+function saveMarkers(){ try{ localStorage.setItem(MK_KEY, JSON.stringify(S.markers.slice(-400))); }catch(e){} }
+function saveRefs(){ try{ localStorage.setItem(REF_KEY, JSON.stringify(S.refs.slice(-12))); }catch(e){} }
+
+function addMarker(label){
+  S.markers.push({ t:Date.now(), label:String(label).slice(0,30) });
+  saveMarkers(); renderMarkers(); toast('已標記「'+label+'」');
+}
+function renderMarkers(){
+  const host = $('#markList'); if(!host) return;
+  const recent = S.markers.slice(-8).reverse();
+  host.innerHTML = recent.map(m=>'<span>'+fmtClock(m.t).slice(0,5)+'　'+escapeHtml(m.label)+'</span>').join('');
+}
+
+function startRefCapture(name){
+  if(!S.running){ toast('請先開始監測，再錄製指紋。'); return; }
+  S.refCapture = { name, until: Date.now()+4000, best:-Infinity, spec:null, bands:null };
+  toast('現在敲擊「'+name+'」— 4 秒內');
+  const b = $('#btnRef'); b.disabled = true; b.textContent = '聽…';
+}
+function handleRefCapture(t){
+  const r = S.refCapture;
+  if(S.dbZ > r.best){ r.best = S.dbZ; r.spec = Array.from(snapshotSpectrum()); r.bands = thirdOctaveBands(); }
+  if(t > r.until){
+    S.refCapture = null;
+    const b = $('#btnRef'); b.disabled = false; b.textContent = '錄製';
+    if(!r.spec || r.best < cfg.floor){ toast('沒收到夠清楚的敲擊聲，請再試一次。'); return; }
+    const tone = findTone(r.bands);
+    S.refs.push({ id:'r'+Date.now(), name:r.name, spec:r.spec, bands:r.bands,
+                  db:+r.best.toFixed(1), tone, at:Date.now() });
+    saveRefs(); renderRefs();
+    toast('已記錄「'+r.name+'」'+(tone?'　共振峰 '+tone.hz+' Hz':''));
+  }
+}
+function renderRefs(){
+  const host = $('#refList'); if(!host) return;
+  if(!S.refs.length){ host.innerHTML = ''; return; }
+  host.innerHTML = S.refs.map(r=>
+    '<div class="refitem"><div><b>'+escapeHtml(r.name)+'</b>'+
+    '<span class="tiny">　'+r.db.toFixed(0)+' dB'+(r.tone?'　共振峰 '+r.tone.hz+' Hz':'　無明顯窄峰')+'</span></div>'+
+    '<button class="btn btn-sm refdel" data-id="'+r.id+'">刪除</button></div>').join('');
+}
+
+function renderKindBar(){
+  const c = { lowfreq:0, impulse:0, manual:0, other:0 };
+  S.events.forEach(e=>{ const k = evKind(e); c[k] = (c[k]||0)+1; });
+  const out = [];
+  if(c.lowfreq) out.push('<b class="kb-lowfreq">低頻共振 '+c.lowfreq+'<i>次</i></b>');
+  if(c.impulse) out.push('<b class="kb-impulse">衝擊音 '+c.impulse+'<i>次</i></b>');
+  if(c.manual)  out.push('<b class="kb-manual">手動 '+c.manual+'<i>次</i></b>');
+  if(c.other)   out.push('<b class="kb-other">未分類 '+c.other+'<i>次</i></b>');
+  const host = $('#kindBar'); if(host) host.innerHTML = out.join('');
+}
+
+/* =========================================================================
+   繪圖
+   ========================================================================= */
+function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+function fitCanvas(cv){
+  const dpr = Math.min(window.devicePixelRatio||1, 2);
+  const w = cv.clientWidth, h = parseInt(cv.getAttribute('height'),10);
+  if(cv.width !== Math.round(w*dpr) || cv.height !== Math.round(h*dpr)){
+    cv.width = Math.round(w*dpr); cv.height = Math.round(h*dpr);
+  }
+  const g = cv.getContext('2d');
+  g.setTransform(dpr,0,0,dpr,0,0);
+  g.clearRect(0,0,w,h);
+  return {g,w,h};
+}
+
+function paintLive(){
+  // 數字
+  const z = isFinite(S.dbZ)? S.dbZ : 0;
+  $('#bigZ').innerHTML = (z>0?z.toFixed(1):'--')+'<span class="u">dB</span>';
+  $('#bigZ').classList.toggle('clip', cfg.clipGuard && S.clipping);
+  $('#valZ').textContent = isFinite(S.dbZ)? S.dbZ.toFixed(1) : '--';
+  $('#valC').textContent = isFinite(S.dbC)? S.dbC.toFixed(1) : '--';
+  $('#valA').textContent = isFinite(S.dbA)? S.dbA.toFixed(1) : '--';
+  const pct = v => clamp((v-20)/(100-20)*100, 0, 100);
+  $('#barZ').style.width = pct(S.dbZ)+'%';
+  $('#barC').style.width = pct(S.dbC)+'%';
+  $('#barA').style.width = pct(S.dbA)+'%';
+
+  const cma = S.cma;
+  $('#cmaVal').textContent = (cma>=0?'+':'')+cma.toFixed(1)+' dB';
+  $('#cmaNeedle').style.left = clamp(cma/40*100,0,100)+'%';
+  const vd = $('#cmaVerdict');
+  if(!isFinite(cma) || S.dbZ < cfg.floor-8){ vd.className='verdict v-norm'; vd.textContent='訊號太弱'; }
+  else if(cma >= 20){ vd.className='verdict v-low'; vd.textContent='強烈低頻主導'; $('#cmaVal').style.color=css('--lowfreq'); }
+  else if(cma >= 15){ vd.className='verdict v-low'; vd.textContent='低頻主導'; $('#cmaVal').style.color=css('--lowfreq'); }
+  else if(cma >= 10){ vd.className='verdict v-mid'; vd.textContent='偏低頻'; $('#cmaVal').style.color=css('--signal'); }
+  else { vd.className='verdict v-norm'; vd.textContent='一般噪音'; $('#cmaVal').style.color=''; }
+  $('#peakHz').textContent = '主頻 '+(S.peakHz? Math.round(S.peakHz):'--')+' Hz';
+  $('#specInfo').textContent = S.clipping ? '⚠ 訊號過載' : (S.ctx? Math.round(S.ctx.sampleRate/1000)+' kHz / '+S.analyser.fftSize+' pt':'—');
+  $('#l90Info').textContent = S.l90===null? '底噪 計算中' : '底噪 L90 '+S.l90.toFixed(1)+' dB';
+
+  drawSpectrum(); drawTrace(); renderStats();
+}
+
+function drawSpectrum(){
+  const cv = $('#cvSpec'); if(!cv.clientWidth) return;
+  const {g,w,h} = fitCanvas(cv);
+  const maxHz = SPEC_MAXHZ;
+  const bins = Math.min(S.nBins-1, Math.floor(maxHz/S.binHz));
+  // 低頻帶底色
+  const lowX0 = 20/maxHz*w, lowX1 = 150/maxHz*w;
+  g.fillStyle = css('--lowfreq-soft'); g.fillRect(lowX0,0,lowX1-lowX0,h);
+  // 格線
+  g.strokeStyle = css('--grid'); g.lineWidth=1; g.font='9px ui-monospace, monospace'; g.fillStyle=css('--text-3');
+  for(let f=100; f<=maxHz; f+=100){
+    const x = Math.round(f/maxHz*w)+.5;
+    g.beginPath(); g.moveTo(x,0); g.lineTo(x,h-13); g.stroke();
+    g.fillText(f+'', x+3, h-3);
+  }
+  g.fillText('Hz', 4, h-3);
+  if(!S.fftBuf || !S.running){ return; }
+  // 頻譜
+  const floorDb=-110, topDb=-10;
+  g.beginPath();
+  for(let i=1;i<=bins;i++){
+    const x = (i*S.binHz)/maxHz*w;
+    const y = (h-14) - clamp((S.fftBuf[i]-floorDb)/(topDb-floorDb),0,1)*(h-18);
+    if(i===1) g.moveTo(x,y); else g.lineTo(x,y);
+  }
+  g.lineTo(w,h-14); g.lineTo(0,h-14); g.closePath();
+  const grd = g.createLinearGradient(0,0,w,0);
+  grd.addColorStop(0, css('--lowfreq')); grd.addColorStop(.3, css('--lowfreq'));
+  grd.addColorStop(.45, css('--trace')); grd.addColorStop(1, css('--trace'));
+  g.globalAlpha=.22; g.fillStyle=grd; g.fill(); g.globalAlpha=1;
+  g.strokeStyle=grd; g.lineWidth=1.4; g.stroke();
+  // 主頻標記
+  if(S.peakHz && S.peakHz<maxHz){
+    const x = S.peakHz/maxHz*w;
+    g.strokeStyle=css('--signal'); g.lineWidth=1.5; g.setLineDash([3,3]);
+    g.beginPath(); g.moveTo(x,0); g.lineTo(x,h-14); g.stroke(); g.setLineDash([]);
+    g.fillStyle=css('--signal'); g.font='600 10px ui-monospace, monospace';
+    const lbl = Math.round(S.peakHz)+' Hz';
+    g.fillText(lbl, clamp(x+4,0,w-g.measureText(lbl).width-2), 11);
+  }
+}
+
+function drawTrace(){
+  const cv=$('#cvTrace'); if(!cv.clientWidth) return;
+  const {g,w,h}=fitCanvas(cv);
+  const pad=16, gh=h-pad-4;
+  if(S.trace.length<2){ g.fillStyle=css('--text-3'); g.font='11px system-ui'; g.fillText('等待資料…',8,h/2); return; }
+  const t1=Date.now(), t0=t1-180000;
+  let lo=Infinity, hi=-Infinity;
+  S.trace.forEach(p=>{ lo=Math.min(lo,p.a); hi=Math.max(hi,p.z); });
+  if(S.l90!==null){ lo=Math.min(lo,S.l90-2); hi=Math.max(hi,currentThreshold()+2); }
+  lo=Math.floor(lo/5)*5-2; hi=Math.ceil(hi/5)*5+2; if(hi-lo<15) hi=lo+15;
+  const X = t => (t-t0)/(t1-t0)*w;
+  const Y = v => pad + (1-(v-lo)/(hi-lo))*gh;
+
+  g.strokeStyle=css('--grid'); g.lineWidth=1; g.font='9px ui-monospace, monospace'; g.fillStyle=css('--text-3');
+  for(let v=Math.ceil(lo/10)*10; v<=hi; v+=10){
+    const y=Math.round(Y(v))+.5;
+    g.beginPath(); g.moveTo(24,y); g.lineTo(w,y); g.stroke();
+    g.fillText(v+'', 2, y+3);
+  }
+  const line=(key,color,wd)=>{
+    g.beginPath(); let started=false;
+    S.trace.forEach(p=>{ const x=X(p.t), y=Y(p[key]); if(!started){g.moveTo(x,y);started=true;} else g.lineTo(x,y); });
+    g.strokeStyle=color; g.lineWidth=wd; g.stroke();
+  };
+  line('a',css('--calm'),1); line('c',css('--lowfreq'),1); line('z',css('--trace'),1.6);
+  // 門檻線
+  const th=currentThreshold();
+  if(th>lo&&th<hi){
+    const y=Math.round(Y(th))+.5;
+    g.strokeStyle=css('--signal'); g.lineWidth=1.2; g.setLineDash([5,4]);
+    g.beginPath(); g.moveTo(24,y); g.lineTo(w,y); g.stroke(); g.setLineDash([]);
+  }
+  // 事件標記
+  g.fillStyle=css('--signal');
+  S.events.forEach(e=>{ if(e.t0>=t0){ const x=X(e.t0); g.beginPath(); g.arc(x,pad-6,3,0,6.284); g.fill(); } });
+}
+
+function renderStats(){
+  $('#stEvents').textContent = S.events.length;
+  $('#stDur').textContent = S.running ? fmtDur((Date.now()-S.startedAt)/1000) : '0:00';
+  $('#stLmax').textContent = isFinite(S.lmaxSession)? S.lmaxSession.toFixed(0) : '--';
+  $('#stL90').textContent = S.l90===null? '--' : S.l90.toFixed(0);
+}
+
+/* =========================================================================
+   事件清單
+   ========================================================================= */
+let openEv = null;
+function evKind(e){ return e.kind || classifyEvent(e); }
+function renderEvents(){
+  renderKindBar();
+  const host = $('#evList'); const f = $('#evFilter').value;
+  let list = S.events;
+  if(f!=='all') list = list.filter(e=>evKind(e)===f);
+  if(!list.length){ host.innerHTML='<div class="empty">'+(S.events.length?'目前篩選條件沒有符合的記錄。':'還沒有記錄。回到「監測」分頁開始收音。')+'</div>'; return; }
+  host.innerHTML = list.slice(0,300).map(e=>{
+    const k = evKind(e);
+    const tag = k==='manual'  ? '<span class="chip b">手動</span>' :
+                k==='impulse' ? '<span class="chip o">衝擊音</span>' :
+                k==='lowfreq' ? '<span class="chip">'+(e.cma>=20?'強低頻':'低頻共振')+'</span>' : '';
+    return '<button class="ev k-'+k+'" data-id="'+e.id+'">'+
+      '<div class="ev-top"><span class="ev-time">'+fmtClock(e.t0)+'</span>'+
+      '<span class="ev-date">'+fmtDate(e.t0)+'</span>'+tag+
+      '<span class="ev-db">'+e.lmaxZ.toFixed(1)+'<span style="font-size:10px;color:var(--text-3)"> dB</span></span></div>'+
+      '<div class="ev-meta"><span>'+e.dur.toFixed(1)+' 秒</span>'+
+      '<span>主頻 '+e.peakHz+' Hz</span>'+
+      '<span>C−A <b>'+(e.cma>=0?'+':'')+e.cma.toFixed(1)+'</b></span>'+
+      (e.crest?'<span>峰值因數 '+e.crest.toFixed(0)+'</span>':'')+
+      (e.spot?'<span>📍'+escapeHtml(e.spot)+'</span>':'')+
+      (e.audio?'<span>🎙 有音檔</span>':'')+'</div>'+
+      (e.note?'<div class="ev-note">'+escapeHtml(e.note)+'</div>':'')+
+      '</button>'+ (openEv===e.id ? evDetail(e) : '');
+  }).join('');
+}
+function evDetail(e){
+  const k = evKind(e);
+  const read = k==='impulse'
+    ? '峰值因數 '+(e.crest||0).toFixed(1)+' dB —— 瞬間峰值遠高於有效值，屬於<b>敲擊、爆裂型的單次聲響</b>。'+
+      '這類聲音常見於木作或系統櫃的熱脹冷縮、建材應力釋放、五金鬆動；與持續的管路共振是不同機制。'
+    : k==='lowfreq'
+    ? 'C−A 達 '+e.cma.toFixed(1)+' dB —— 能量集中在低頻，且持續 '+e.dur.toFixed(1)+' 秒，'+
+      '符合<b>管路或結構共振</b>的特徵。'
+    : '峰值因數 '+(e.crest||0).toFixed(1)+' dB、C−A '+e.cma.toFixed(1)+' dB，未落入明確的分類。';
+  let extra = '';
+  if(e.tone){
+    extra += '<div class="note info" style="margin-top:8px; font-size:12.5px"><b>偵測到窄峰：'+e.tone.hz+' Hz</b>，'+
+      '高出相鄰頻帶 '+e.tone.excess+' dB（判定門檻 '+e.tone.need+' dB）。'+
+      '能量集中在單一頻率是<b>共振</b>的特徵——結構或管路的尺寸固定，被激發時只會在自己的固有頻率上響。'+
+      (isMainsHum(e.tone.hz)
+        ? '<br><b style="color:var(--signal)">但請先排除電器：</b>'+e.tone.hz+' Hz 接近台灣電網 60 Hz 的倍頻，'+
+          '冰箱壓縮機、加壓馬達、變壓器都會產生這個頻率。把冰箱拔電 10 分鐘再量一次就能確認。'
+        : '')+'</div>';
+  }
+  if(e.match){
+    extra += '<div class="note" style="margin-top:8px; font-size:12.5px"><b>指紋比對：最接近「'+escapeHtml(e.match.name)+'」</b>'+
+      '（相似度 '+Math.round(e.match.sim*100)+'%）。相似度越高代表頻譜形狀越接近，'+
+      '意味著聲音很可能經由同一個結構發出或傳遞。</div>';
+  }
+  return '<div class="ev-detail" id="det-'+e.id+'">'+
+    '<div class="scroll-x"><table><tr><th>指標</th><th style="text-align:right">Z 線性</th><th style="text-align:right">C 加權</th><th style="text-align:right">A 加權</th></tr>'+
+    '<tr><td>最大值 Lmax</td><td class="n">'+e.lmaxZ.toFixed(1)+'</td><td class="n">'+e.lmaxC.toFixed(1)+'</td><td class="n">'+e.lmaxA.toFixed(1)+'</td></tr>'+
+    '<tr><td>等效音量 Leq</td><td class="n">'+e.leqZ.toFixed(1)+'</td><td class="n">'+e.leqC.toFixed(1)+'</td><td class="n">'+e.leqA.toFixed(1)+'</td></tr>'+
+    (e.lpeak!=null?'<tr><td>瞬時峰值 Lpeak</td><td class="n">'+e.lpeak.toFixed(1)+'</td><td class="n">—</td><td class="n">—</td></tr>':'')+
+    '</table></div>'+
+    '<div class="note" style="margin-top:9px; font-size:12.5px">'+
+      '<b>'+KIND_LABEL[k]+'。</b>'+read+'</div>'+ extra +
+    '<div class="ev-meta" style="margin-top:8px">'+
+      '<span>起 '+fmtFull(e.t0)+'</span><span>觸發門檻 '+e.th.toFixed(1)+' dB</span>'+
+      '<span>當時背景 L90 '+(e.l90===null?'—':e.l90.toFixed(1))+' dB</span>'+
+      '<span>校準偏移 +'+e.cal+'</span>'+
+      (e.spot?'<span>位置 '+escapeHtml(e.spot)+'</span>':'')+'</div>'+
+    (e.spec? '<canvas class="evspec" data-id="'+e.id+'" height="90" style="margin-top:9px"></canvas>':'')+
+    '<div id="aud-'+e.id+'"></div>'+
+    '<label class="field" style="margin:10px 0 0"><span>備註（例：樓上剛沖馬桶／關總水閥後仍出現）</span>'+
+      '<input type="text" class="evnote" data-id="'+e.id+'" value="'+escapeHtml(e.note||'')+'" placeholder="寫下當下的情境，報告會帶上"></label>'+
+    '</div>';
+}
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function drawEvSpec(cv, spec){
+  const {g,w,h} = fitCanvas(cv);
+  const lowX0=20/SPEC_MAXHZ*w, lowX1=150/SPEC_MAXHZ*w;
+  g.fillStyle=css('--lowfreq-soft'); g.fillRect(lowX0,0,lowX1-lowX0,h);
+  g.strokeStyle=css('--grid'); g.font='9px ui-monospace, monospace'; g.fillStyle=css('--text-3'); g.lineWidth=1;
+  for(let f=100; f<=SPEC_MAXHZ; f+=100){
+    const x=Math.round(f/SPEC_MAXHZ*w)+.5;
+    g.beginPath(); g.moveTo(x,0); g.lineTo(x,h-12); g.stroke(); g.fillText(f+'',x+3,h-2);
+  }
+  let mx=0, mi=0;
+  spec.forEach((v,i)=>{ if(v>mx){mx=v;mi=i;} });
+  g.beginPath();
+  for(let i=0;i<spec.length;i++){
+    const x=i/(spec.length-1)*w;
+    const y=(h-13)-(spec[i]/255)*(h-17);
+    i===0? g.moveTo(x,y) : g.lineTo(x,y);
+  }
+  g.lineTo(w,h-13); g.lineTo(0,h-13); g.closePath();
+  g.fillStyle=css('--lowfreq'); g.globalAlpha=.2; g.fill(); g.globalAlpha=1;
+  g.strokeStyle=css('--lowfreq'); g.lineWidth=1.4; g.stroke();
+  const pf = Math.round(mi/spec.length*SPEC_MAXHZ);
+  const x = mi/(spec.length-1)*w;
+  g.strokeStyle=css('--signal'); g.setLineDash([3,3]); g.beginPath(); g.moveTo(x,0); g.lineTo(x,h-13); g.stroke(); g.setLineDash([]);
+  g.fillStyle=css('--signal'); g.font='600 10px ui-monospace, monospace'; g.fillText(pf+' Hz', clamp(x+4,0,w-42), 11);
+}
+
+$('#evList').addEventListener('click', async e => {
+  const btn = e.target.closest('.ev'); if(!btn) return;
+  const id = btn.dataset.id;
+  openEv = (openEv===id) ? null : id;
+  renderEvents();
+  if(openEv){
+    const ev = S.events.find(x=>x.id===openEv);
+    const cv = document.querySelector('.evspec[data-id="'+openEv+'"]');
+    if(cv && ev.spec) requestAnimationFrame(()=>drawEvSpec(cv, ev.spec));
+    if(ev.audio){
+      const a = await idbGet('audio', ev.id);
+      const host = $('#aud-'+ev.id);
+      if(a && a.blob && host){
+        const url = URL.createObjectURL(a.blob);
+        host.innerHTML = '<audio controls preload="none" src="'+url+'"></audio>'+
+          '<div class="row" style="margin-top:6px"><button class="btn btn-sm" id="dlone-'+ev.id+'">下載這段音檔（'+(a.bytes/1024|0)+' KB）</button></div>';
+        const b = $('#dlone-'+ev.id);
+        if(b) b.addEventListener('click', ()=>downloadOneAudio(ev));
+      }
+    }
+    document.getElementById('det-'+openEv)?.scrollIntoView({block:'nearest', behavior:'smooth'});
+  }
+});
+$('#evList').addEventListener('change', async e => {
+  if(!e.target.classList.contains('evnote')) return;
+  const id = e.target.dataset.id, ev = S.events.find(x=>x.id===id);
+  if(ev){ ev.note = e.target.value; await idbPut('events', ev); }
+});
+$('#evFilter').addEventListener('change', renderEvents);
+
+/* =========================================================================
+   圖表分頁
+   ========================================================================= */
+function drawCharts(){
+  drawHourChart(); drawTrendChart(); drawFreqChart(); drawAvgSpec();
+}
+function axisBase(g,w,h,padL,padB){
+  g.strokeStyle=css('--grid'); g.lineWidth=1;
+  g.beginPath(); g.moveTo(padL+.5,2); g.lineTo(padL+.5,h-padB+.5); g.lineTo(w-2,h-padB+.5); g.stroke();
+  g.font='9.5px ui-monospace, monospace'; g.fillStyle=css('--text-3');
+}
+function drawHourChart(){
+  const cv=$('#cvHour'); if(!cv.clientWidth) return;
+  const {g,w,h}=fitCanvas(cv); const padL=24,padB=17;
+  const bins=new Array(24).fill(0);
+  S.events.forEach(e=>bins[new Date(e.t0).getHours()]++);
+  const mx=Math.max(1,...bins);
+  axisBase(g,w,h,padL,padB);
+  const bw=(w-padL-6)/24;
+  for(let i=0;i<24;i++){
+    const x=padL+2+i*bw, bh=(bins[i]/mx)*(h-padB-8);
+    if(bins[i]>0){
+      g.fillStyle = (i>=22||i<=6) ? css('--lowfreq') : css('--signal');
+      g.fillRect(x, h-padB-bh, Math.max(2,bw-2.5), bh);
+      if(bw>13){ g.fillStyle=css('--text-2'); g.font='600 9px ui-monospace,monospace';
+        g.fillText(bins[i], x+(bw-2.5)/2 - 3, h-padB-bh-3); }
+    }
+    if(i%3===0){ g.fillStyle=css('--text-3'); g.font='9px ui-monospace,monospace'; g.fillText(i, x, h-4); }
+  }
+  for(let k=0;k<=mx;k+=Math.max(1,Math.ceil(mx/4))){
+    const y=h-padB-(k/mx)*(h-padB-8);
+    g.fillStyle=css('--text-3'); g.fillText(k, 2, y+3);
+  }
+  g.fillStyle=css('--text-3'); g.font='9px ui-monospace,monospace'; g.fillText('時', w-14, h-4);
+  if(!S.events.length){ g.fillStyle=css('--text-3'); g.font='11px system-ui'; g.fillText('尚無事件', padL+8, h/2); }
+}
+function drawTrendChart(){
+  const cv=$('#cvTrend'); if(!cv.clientWidth) return;
+  const {g,w,h}=fitCanvas(cv); const padL=26,padB=17;
+  const s=S.samples;
+  axisBase(g,w,h,padL,padB);
+  if(s.length<2){ g.fillStyle=css('--text-3'); g.font='11px system-ui'; g.fillText('監測開始後會累積曲線', padL+8, h/2); return; }
+  const t0=s[0].t, t1=s[s.length-1].t||t0+1;
+  let lo=Infinity,hi=-Infinity; s.forEach(p=>{lo=Math.min(lo,p.a); hi=Math.max(hi,p.m);});
+  lo=Math.floor(lo/10)*10; hi=Math.ceil(hi/10)*10; if(hi-lo<20) hi=lo+20;
+  const X=t=>padL+ (t-t0)/Math.max(1,t1-t0)*(w-padL-4);
+  const Y=v=>2+(1-(v-lo)/(hi-lo))*(h-padB-4);
+  for(let v=lo; v<=hi; v+=10){
+    const y=Math.round(Y(v))+.5;
+    g.strokeStyle=css('--grid'); g.beginPath(); g.moveTo(padL,y); g.lineTo(w-2,y); g.stroke();
+    g.fillStyle=css('--text-3'); g.fillText(v, 2, y+3);
+  }
+  const line=(k,c,wd)=>{ g.beginPath(); s.forEach((p,i)=>{ const x=X(p.t),y=Y(p[k]); i?g.lineTo(x,y):g.moveTo(x,y); }); g.strokeStyle=c; g.lineWidth=wd; g.stroke(); };
+  line('a',css('--calm'),1); line('z',css('--trace'),1.3);
+  // 情境標記：垂直虛線 + 直排標籤
+  S.markers.forEach(m=>{
+    if(m.t < t0 || m.t > t1) return;
+    const x = X(m.t);
+    g.strokeStyle = css('--trace'); g.lineWidth = 1; g.setLineDash([2,3]);
+    g.beginPath(); g.moveTo(x,2); g.lineTo(x,h-padB); g.stroke(); g.setLineDash([]);
+    g.save(); g.translate(x,5); g.rotate(Math.PI/2);
+    g.fillStyle = css('--trace'); g.font = '9px system-ui,sans-serif';
+    g.fillText(m.label, 2, -2.5); g.restore();
+  });
+  // 事件點：依類型上色
+  S.events.forEach(e=>{ const x=X(e.t0); if(x>=padL){
+    g.fillStyle = evKind(e)==='impulse' ? css('--signal') : evKind(e)==='lowfreq' ? css('--lowfreq') : css('--text-3');
+    g.beginPath(); g.arc(x, Y(e.lmaxZ), 2.6, 0, 6.284); g.fill(); } });
+  // 時間軸
+  g.fillStyle=css('--text-3');
+  [0,.5,1].forEach(f=>{ const t=t0+(t1-t0)*f; const x=X(t);
+    g.fillText(fmtClock(t).slice(0,5), clamp(x-13,padL,w-32), h-4); });
+}
+function drawFreqChart(){
+  const cv=$('#cvFreq'); if(!cv.clientWidth) return;
+  const {g,w,h}=fitCanvas(cv); const padL=24,padB=17, MAXF=400, NB=40;
+  const bins=new Array(NB).fill(0);
+  S.events.forEach(e=>{ const i=Math.floor(clamp(e.peakHz,0,MAXF-1)/MAXF*NB); bins[i]++; });
+  const mx=Math.max(1,...bins);
+  axisBase(g,w,h,padL,padB);
+  const lowX0=padL+ (20/MAXF)*(w-padL-4), lowX1=padL+ (150/MAXF)*(w-padL-4);
+  g.fillStyle=css('--lowfreq-soft'); g.fillRect(lowX0,2,lowX1-lowX0,h-padB-2);
+  const bw=(w-padL-6)/NB;
+  for(let i=0;i<NB;i++){
+    if(!bins[i]) continue;
+    const x=padL+2+i*bw, bh=(bins[i]/mx)*(h-padB-8);
+    const f=(i+.5)/NB*MAXF;
+    g.fillStyle = (f>=20&&f<=150)? css('--lowfreq') : css('--trace');
+    g.fillRect(x, h-padB-bh, Math.max(2,bw-1.5), bh);
+  }
+  g.fillStyle=css('--text-3'); g.font='9px ui-monospace,monospace';
+  for(let f=0; f<=MAXF; f+=100){ const x=padL+ (f/MAXF)*(w-padL-4); g.fillText(f, clamp(x-6,0,w-22), h-4); }
+  g.fillText('Hz', w-14, h-4);
+  for(let k=0;k<=mx;k+=Math.max(1,Math.ceil(mx/4))) g.fillText(k, 2, h-padB-(k/mx)*(h-padB-8)+3);
+  if(!S.events.length){ g.fillStyle=css('--text-3'); g.font='11px system-ui'; g.fillText('尚無事件', padL+8, h/2); }
+}
+function drawAvgSpec(){
+  const cv=$('#cvAvgSpec'); if(!cv.clientWidth) return;
+  const {g,w,h}=fitCanvas(cv);
+  const withSpec=S.events.filter(e=>e.spec&&e.spec.length===SPEC_BINS);
+  const lowX0=20/SPEC_MAXHZ*w, lowX1=150/SPEC_MAXHZ*w;
+  g.fillStyle=css('--lowfreq-soft'); g.fillRect(lowX0,0,lowX1-lowX0,h-13);
+  g.strokeStyle=css('--grid'); g.lineWidth=1; g.font='9px ui-monospace,monospace';
+  for(let f=100;f<=SPEC_MAXHZ;f+=100){ const x=Math.round(f/SPEC_MAXHZ*w)+.5;
+    g.beginPath(); g.moveTo(x,0); g.lineTo(x,h-13); g.stroke(); g.fillStyle=css('--text-3'); g.fillText(f,x+3,h-2); }
+  if(!withSpec.length){ g.fillStyle=css('--text-3'); g.font='11px system-ui'; g.fillText('尚無事件頻譜',8,h/2); return; }
+  const avg=new Float32Array(SPEC_BINS);
+  withSpec.forEach(e=>{ for(let i=0;i<SPEC_BINS;i++) avg[i]+=e.spec[i]; });
+  for(let i=0;i<SPEC_BINS;i++) avg[i]/=withSpec.length;
+  let mi=0; for(let i=0;i<SPEC_BINS;i++) if(avg[i]>avg[mi]) mi=i;
+  g.beginPath();
+  for(let i=0;i<SPEC_BINS;i++){ const x=i/(SPEC_BINS-1)*w, y=(h-14)-(avg[i]/255)*(h-18); i?g.lineTo(x,y):g.moveTo(x,y); }
+  g.lineTo(w,h-14); g.lineTo(0,h-14); g.closePath();
+  g.fillStyle=css('--lowfreq'); g.globalAlpha=.22; g.fill(); g.globalAlpha=1;
+  g.strokeStyle=css('--lowfreq'); g.lineWidth=1.5; g.stroke();
+  const x=mi/(SPEC_BINS-1)*w, pf=Math.round(mi/SPEC_BINS*SPEC_MAXHZ);
+  g.strokeStyle=css('--signal'); g.setLineDash([3,3]); g.beginPath(); g.moveTo(x,0); g.lineTo(x,h-14); g.stroke(); g.setLineDash([]);
+  g.fillStyle=css('--signal'); g.font='600 10.5px ui-monospace,monospace';
+  g.fillText('共同峰 '+pf+' Hz', clamp(x+5,0,w-74), 12);
+}
+
+/* =========================================================================
+   報告
+   ========================================================================= */
+function buildReport(){
+  const evs = S.events;
+  if(!evs.length){ return '<div class="empty">還沒有任何事件記錄，無法產生報告。</div>'; }
+  const sorted=[...evs].sort((a,b)=>a.t0-b.t0);
+  const t0=sorted[0].t0, t1=sorted[sorted.length-1].t1;
+  const lowN=evs.filter(e=>e.cma>=15).length;
+  const hours=new Array(24).fill(0); evs.forEach(e=>hours[new Date(e.t0).getHours()]++);
+  const topHours=hours.map((n,i)=>({i,n})).filter(x=>x.n>0).sort((a,b)=>b.n-a.n).slice(0,3);
+  const freqs=evs.map(e=>e.peakHz).filter(f=>f>0).sort((a,b)=>a-b);
+  const medF=freqs.length? freqs[Math.floor(freqs.length/2)] : 0;
+  const inBand=freqs.filter(f=>Math.abs(f-medF)<=medF*0.25).length;
+  const maxE=[...evs].sort((a,b)=>b.lmaxZ-a.lmaxZ)[0];
+  const avgCma=evs.reduce((s,e)=>s+e.cma,0)/evs.length;
+  const nights=evs.filter(e=>{const hh=new Date(e.t0).getHours(); return hh>=22||hh<6;}).length;
+  const noted=evs.filter(e=>e.note);
+
+  const kinds = { lowfreq:0, impulse:0, manual:0, other:0 };
+  evs.forEach(e=>kinds[evKind(e)]++);
+  const toned = evs.filter(e=>e.tone);
+  const toneHz = {};
+  toned.forEach(e=>{ toneHz[e.tone.hz] = (toneHz[e.tone.hz]||0)+1; });
+  const topTone = Object.entries(toneHz).sort((a,b)=>b[1]-a[1])[0];
+  const matched = {};
+  evs.forEach(e=>{ if(e.match) matched[e.match.name] = (matched[e.match.name]||0)+1; });
+  const topMatch = Object.entries(matched).sort((a,b)=>b[1]-a[1])[0];
+  const spots = {};
+  evs.forEach(e=>{ if(e.spot){ (spots[e.spot] = spots[e.spot] || []).push(e.lmaxZ); } });
+
+  const row=(k,v)=>'<tr><td>'+k+'</td><td class="n">'+v+'</td></tr>';
+  let html='<div class="eyebrow" style="margin-bottom:4px">噪音事件量測摘要</div>'+
+    '<h3 style="margin-bottom:9px">'+escapeHtml(cfg.place||'（未填寫地點）')+'</h3>'+
+    '<table style="margin-bottom:13px">'+
+    row('量測期間', fmtFull(t0)+'　至　'+fmtFull(t1))+
+    row('事件總數', evs.length+' 次')+
+    row('　低頻共振型', kinds.lowfreq+' 次')+
+    row('　衝擊音型', kinds.impulse+' 次')+
+    row('　手動標記', kinds.manual+' 次')+
+    row('其中夜間（22:00–06:00）', nights+' 次')+
+    row('低頻主導事件（C−A ≥ 15 dB）', lowN+' 次（占 '+Math.round(lowN/evs.length*100)+'%）')+
+    row('平均 C−A 差值', (avgCma>=0?'+':'')+avgCma.toFixed(1)+' dB')+
+    row('事件主頻中位數', medF+' Hz')+
+    row('主頻集中度', inBand+'／'+freqs.length+' 個事件落在 '+Math.round(medF*0.75)+'–'+Math.round(medF*1.25)+' Hz')+
+    row('偵測到窄峰的事件', toned.length+' 次'+(topTone?'（最常出現在 '+topTone[0]+' Hz，'+topTone[1]+' 次）':''))+
+    (topMatch? row('敲擊指紋最常吻合', topMatch[0]+'（'+topMatch[1]+' 次）') : '')+
+    row('最大音量事件', maxE.lmaxZ.toFixed(1)+' dB(Z) ／ '+maxE.lmaxA.toFixed(1)+' dB(A)　'+fmtFull(maxE.t0))+
+    row('最常發生時段', topHours.map(x=>x.i+':00–'+(x.i+1)+':00（'+x.n+' 次）').join('、'))+
+    '</table>';
+
+  if(Object.keys(spots).length > 1){
+    html += '<div class="eyebrow" style="margin:13px 0 5px">各量測位置比較</div>'+
+      '<p class="tiny">同類事件在哪個位置最響，聲源就在那附近。聲音在自由空間每距離加倍衰減約 6 dB。</p>'+
+      '<div class="scroll-x"><table><tr><th>位置</th><th>事件數</th><th>最大 dB(Z)</th><th>中位數</th></tr>'+
+      Object.entries(spots).sort((a,b)=>Math.max(...b[1])-Math.max(...a[1])).map(([k,v])=>{
+        const s=[...v].sort((x,y)=>x-y);
+        return '<tr><td>'+escapeHtml(k)+'</td><td class="n">'+v.length+'</td>'+
+          '<td class="n">'+Math.max(...v).toFixed(1)+'</td>'+
+          '<td class="n">'+s[Math.floor(s.length/2)].toFixed(1)+'</td></tr>';
+      }).join('')+'</table></div>';
+  }
+
+  html+='<div class="note info" style="margin:13px 0"><b>判讀：</b>';
+  const pts=[];
+  if(avgCma>=15) pts.push('平均 C−A 達 '+avgCma.toFixed(1)+' dB，能量明顯集中在低頻。A 加權會大幅低估這類噪音的實際干擾程度，<b>不應只用 dB(A) 判定是否超標</b>。');
+  else if(avgCma>=10) pts.push('平均 C−A 為 '+avgCma.toFixed(1)+' dB，低頻成分偏高。');
+  else pts.push('平均 C−A 為 '+avgCma.toFixed(1)+' dB，未顯示明顯的低頻主導特徵。');
+  if(topTone && topTone[1] >= 3){
+    pts.push('有 '+topTone[1]+' 次事件在 <b>'+topTone[0]+' Hz</b> 出現明顯窄峰（高出相鄰 1/3 八音度頻帶達判定門檻以上）。'+
+      '能量反覆集中在同一個固定頻率，是<b>結構或管路共振</b>的典型特徵。'+
+      (isMainsHum(+topTone[0]) ? '　<b>惟須先排除電器：</b>此頻率接近台灣電網 60 Hz 的倍頻，冰箱、加壓馬達、變壓器均可能為來源，建議做拔電對照測試。' : ''));
+  }
+  if(freqs.length>=5 && inBand/freqs.length>=0.6) pts.push('有 '+Math.round(inBand/freqs.length*100)+'% 的事件主頻集中在 '+medF+' Hz 附近。共振腔尺寸不變，頻率才會重複落在同一處；隨機的生活噪音不會如此。');
+  if(kinds.impulse >= 3) pts.push('記錄到 '+kinds.impulse+' 次衝擊型聲響（瞬時峰值遠高於有效值、持續時間極短）。這類聲音的機制與持續性共振不同，常見於木作或建材的熱脹冷縮、應力釋放、固定五金鬆動。');
+  if(topMatch && topMatch[1] >= 2) pts.push('敲擊指紋比對顯示，有 '+topMatch[1]+' 次事件的頻譜形狀最接近「'+escapeHtml(topMatch[0])+'」，建議優先檢查該處的固定方式與接合間隙。');
+  if(nights>0) pts.push('夜間（22:00–06:00）時段記錄到 '+nights+' 次事件。');
+  if(topHours.length && topHours[0].n>=3) pts.push('事件明顯集中於 '+topHours[0].i+' 時前後，建議比對該時段的用水行為或空調開關時間。');
+  html+=pts.map(p=>'<div style="margin-top:5px">・'+p+'</div>').join('')+'</div>';
+
+  if(noted.length){
+    html+='<div class="eyebrow" style="margin:13px 0 5px">現場註記</div><div class="scroll-x"><table>'+
+      '<tr><th>時間</th><th>dB(Z)</th><th>主頻</th><th>C−A</th><th>註記</th></tr>'+
+      noted.slice(0,40).map(e=>'<tr><td class="mono">'+fmtFull(e.t0).slice(5)+'</td><td class="n">'+e.lmaxZ.toFixed(1)+'</td><td class="n">'+e.peakHz+'</td><td class="n">'+(e.cma>=0?'+':'')+e.cma.toFixed(1)+'</td><td>'+escapeHtml(e.note)+'</td></tr>').join('')+
+      '</table></div>';
+  }
+
+  html+='<div class="eyebrow" style="margin:14px 0 5px">事件明細（前 30 筆）</div><div class="scroll-x"><table>'+
+    '<tr><th>時間</th><th>秒</th><th>Lmax Z</th><th>Lmax C</th><th>Lmax A</th><th>C−A</th><th>主頻</th></tr>'+
+    sorted.slice(0,30).map(e=>'<tr><td class="mono">'+fmtFull(e.t0).slice(5)+'</td><td class="n">'+e.dur.toFixed(1)+'</td>'+
+      '<td class="n">'+e.lmaxZ.toFixed(1)+'</td><td class="n">'+e.lmaxC.toFixed(1)+'</td><td class="n">'+e.lmaxA.toFixed(1)+'</td>'+
+      '<td class="n">'+(e.cma>=0?'+':'')+e.cma.toFixed(1)+'</td><td class="n">'+e.peakHz+'</td></tr>').join('')+
+    '</table></div>';
+
+  html+='<div class="eyebrow" style="margin:16px 0 5px">可援引的規定與後續步驟（參考資訊，非法律意見）</div>'+
+    '<div class="note info" style="font-size:12.5px">'+
+    '<div><b>一、給排水管路本身沒有法定分貝上限</b>，因此主張重點不在「超標」，而在<b>施工瑕疵</b>：'+
+    '建築技術規則建築設計施工編第 46-2 條第 2 項明定，管線貫穿分戶牆與樓板的空隙<b>必須以軟質填縫材填實</b>——'+
+    '這是現場最容易查證的項目，若未填實即為明確瑕疵。同編第 46-1 條第 2 項將給水、排水設備列入「機械設備」管制範圍；'+
+    '第 46-7 條要求機械設備空間與下層居室間樓板的衝擊音 Ln,w ≤ 50 dB（較一般分戶樓板更嚴）。</div>'+
+    '<div style="margin-top:7px"><b>二、抽水機、加壓馬達另有法定標準</b>：經地方政府依噪音管制法第 9 條公告納管後，'+
+    '適用噪音管制標準第 8 條的低頻（20–200 Hz）規定，第一、二類管制區夜間最嚴為 27 dB(A)。'+
+    '若聲源是社區的加壓設備，這條可直接向環保局陳情。</div>'+
+    '<div style="margin-top:7px"><b>三、立管、水塔、加壓馬達屬公寓大廈的共用部分</b>，'+
+    '依公寓大廈管理條例第 36 條，對建商主張的主體應為<b>管理委員會</b>而非個別住戶；'+
+    '先向管委會反映並列入會議紀錄，力道遠大於自己去談。</div>'+
+    '<div style="margin-top:7px"><b>四、時效要留意</b>：民法第 365 條規定，買受人發現瑕疵後應即通知，'+
+    '解約或減價請求權自通知後 6 個月、自物之交付後 5 年間不行使而消滅。'+
+    '建議<b>先寄存證信函把「已通知」的時點固定下來</b>，再從容蒐證。'+
+    '建商保固一般為結構 15 年、固定建材與設備 1 年。</div>'+
+    '<div style="margin-top:7px"><b>五、證據位階</b>：本報告屬初步篩選，用途是鎖定時段、證明相關性與規律性。'+
+    '正式認定仍需環保局檢測（免費、位階最高）或委託土木／結構技師公會鑑定（初勘費用約數千元）。'+
+    '<b>帶著本報告去申請，比空口陳述更容易促成受理。</b></div>'+
+    '<div style="margin-top:7px"><b>六、若為室內裝修（木作、系統櫃）的聲響</b>，責任方是裝修承攬廠商而非建商，'+
+    '依民法承攬瑕疵擔保規定處理，主張方式與上述不同，請分開處理。</div>'+
+    '</div>';
+
+  html+='<p class="tiny" style="margin-top:13px; padding-top:10px; border-top:1px solid var(--line)">'+
+    '量測工具：手機麥克風 + Web Audio（FFT 8192 點，IEC 61672 A／C 加權計算，1/3 八音度頻帶窄峰判定）。'+
+    '校準偏移量 +'+cfg.cal+' dB，<b>絕對音壓值為未經聲學校準之估算值，僅供相對比較</b>；'+
+    'C−A 差值、主頻位置與時間分布不受校準影響。'+
+    (cfg.who? '　量測者：'+escapeHtml(cfg.who) : '')+
+    '　報告產生時間：'+fmtFull(Date.now())+'</p>';
+  return html;
+}
+
+/* =========================================================================
+   匯出
+   ========================================================================= */
+/* 儲存檔案：優先用 Artifact 平台的下載授權，退回一般 <a download>（打包成 App 後走這條） */
+let dlNs = undefined;
+async function saveFile(name, data){
+  if(dlNs === undefined){
+    try{ dlNs = window.claude && window.claude.use ? await window.claude.use('downloads') : null; }
+    catch(e){ dlNs = null; }
+  }
+  if(dlNs){
+    try{ await dlNs.save({filename:name, data}); return true; }
+    catch(err){
+      const c = err && err.code;
+      if(c === 'declined') return false;
+      if(c === 'rate_limited'){ toast('剛剛有另一個下載還沒確認，請稍候再試。'); return false; }
+      if(c === 'too_large'){ toast('檔案太大，請先縮短監測區間或關閉錄音後再匯出。'); return false; }
+      toast('儲存失敗：'+(err && err.message || c || '未知錯誤')); return false;
+    }
+  }
+  const blob = data instanceof Blob ? data : new Blob([data]);
+  const url = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = url; a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(()=>{ a.remove(); URL.revokeObjectURL(url); }, 1000);
+  return true;
+}
+function toast(msg){
+  let el = $('#toast');
+  if(!el){ el = document.createElement('div'); el.id='toast';
+    el.style.cssText='position:fixed;left:50%;bottom:74px;transform:translateX(-50%);z-index:90;'+
+      'background:var(--ink);color:#fff;padding:10px 16px;border-radius:9px;font-size:13px;max-width:88vw;'+
+      'box-shadow:0 6px 22px rgba(0,0,0,.3);text-align:center;line-height:1.45';
+    document.body.appendChild(el); }
+  el.textContent = msg; el.style.display='block';
+  clearTimeout(el._t); el._t = setTimeout(()=>{ el.style.display='none'; }, 3200);
+}
+
+/* ---------- ZIP（store 模式，不壓縮）---------- */
+let crcTable = null;
+function crc32(buf){
+  if(!crcTable){ crcTable = new Uint32Array(256);
+    for(let n=0;n<256;n++){ let c=n; for(let k=0;k<8;k++) c = (c&1) ? (0xEDB88320 ^ (c>>>1)) : (c>>>1); crcTable[n]=c>>>0; } }
+  let c = 0xFFFFFFFF;
+  for(let i=0;i<buf.length;i++) c = crcTable[(c ^ buf[i]) & 0xFF] ^ (c>>>8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+function makeZip(files){
+  const enc = new TextEncoder(), parts = [], central = [];
+  let offset = 0;
+  files.forEach(f=>{
+    const name = enc.encode(f.name), crc = crc32(f.data), len = f.data.length;
+    const lh = new Uint8Array(30 + name.length), v = new DataView(lh.buffer);
+    v.setUint32(0,0x04034b50,true); v.setUint16(4,20,true); v.setUint16(6,0x0800,true);
+    v.setUint16(8,0,true); v.setUint16(10,0,true); v.setUint16(12,0,true);
+    v.setUint32(14,crc,true); v.setUint32(18,len,true); v.setUint32(22,len,true);
+    v.setUint16(26,name.length,true); v.setUint16(28,0,true); lh.set(name,30);
+    parts.push(lh, f.data);
+    const ch = new Uint8Array(46 + name.length), cv = new DataView(ch.buffer);
+    cv.setUint32(0,0x02014b50,true); cv.setUint16(4,20,true); cv.setUint16(6,20,true);
+    cv.setUint16(8,0x0800,true); cv.setUint16(10,0,true); cv.setUint16(12,0,true); cv.setUint16(14,0,true);
+    cv.setUint32(16,crc,true); cv.setUint32(20,len,true); cv.setUint32(24,len,true);
+    cv.setUint16(28,name.length,true); cv.setUint32(38,0,true); cv.setUint32(42,offset,true);
+    ch.set(name,46); central.push(ch);
+    offset += lh.length + len;
+  });
+  let cdSize = 0; central.forEach(c=>cdSize+=c.length);
+  const eocd = new Uint8Array(22), ev = new DataView(eocd.buffer);
+  ev.setUint32(0,0x06054b50,true);
+  ev.setUint16(8,files.length,true); ev.setUint16(10,files.length,true);
+  ev.setUint32(12,cdSize,true); ev.setUint32(16,offset,true);
+  return new Blob([...parts, ...central, eocd], {type:'application/zip'});
+}
+const u8 = s => new TextEncoder().encode(s);
+
+async function exportZip(){
+  if(!S.events.length){ toast('還沒有事件記錄。'); return; }
+  const btn = $('#btnZip'); const old = btn.textContent;
+  btn.textContent = '打包中…'; btn.disabled = true;
+  try{
+    const files = [];
+    files.push({name:'events.csv', data:u8(csvText())});
+    files.push({name:'data.json',  data:u8(jsonText())});
+    files.push({name:'README.txt', data:u8(readmeText())});
+    files.push({name:'report.html', data:u8(reportHtmlDoc())});
+    let n = 0, bytes = 0;
+    for(const e of S.events){
+      if(!e.audio) continue;
+      const a = await idbGet('audio', e.id);
+      if(!a || !a.blob) continue;
+      const ab = await a.blob.arrayBuffer();
+      const d = new Date(e.t0);
+      const nm = 'audio/'+d.getFullYear()+pad2(d.getMonth()+1)+pad2(d.getDate())+'_'+
+                 pad2(d.getHours())+pad2(d.getMinutes())+pad2(d.getSeconds())+
+                 '_'+Math.round(e.lmaxZ)+'dB_'+e.peakHz+'Hz.wav';
+      files.push({name:nm, data:new Uint8Array(ab)});
+      n++; bytes += ab.byteLength;
+    }
+    const zip = makeZip(files);
+    const ok = await saveFile('噪音記錄_'+new Date().toISOString().slice(0,10)+'.zip', zip);
+    if(ok) toast('已打包 '+S.events.length+' 筆事件、'+n+' 個音檔（'+(zip.size/1048576).toFixed(1)+' MB）');
+  }catch(err){ toast('打包失敗：'+(err.message||err)); }
+  finally{ btn.textContent = old; btn.disabled = false; }
+}
+
+async function downloadOneAudio(ev){
+  const a = await idbGet('audio', ev.id);
+  if(!a || !a.blob){ toast('找不到音檔。'); return; }
+  const ab = await a.blob.arrayBuffer();
+  const d = new Date(ev.t0);
+  const stamp = d.getFullYear()+pad2(d.getMonth()+1)+pad2(d.getDate())+'_'+pad2(d.getHours())+pad2(d.getMinutes())+pad2(d.getSeconds());
+  const zip = makeZip([{name:stamp+'_'+Math.round(ev.lmaxZ)+'dB_'+ev.peakHz+'Hz.wav', data:new Uint8Array(ab)}]);
+  await saveFile('噪音音檔_'+stamp+'.zip', zip);
+}
+
+function readmeText(){
+  const evs = S.events;
+  const t0 = evs.length ? fmtFull(Math.min(...evs.map(e=>e.t0))) : '—';
+  const t1 = evs.length ? fmtFull(Math.max(...evs.map(e=>e.t1))) : '—';
+  return [
+    '室內低頻噪音量測記錄',
+    '='.repeat(40),
+    '',
+    '地點：' + (cfg.place || '（未填寫）'),
+    '量測者：' + (cfg.who || '（未填寫）'),
+    '量測期間：' + t0 + '　至　' + t1,
+    '事件總數：' + evs.length + ' 次',
+    '匯出時間：' + fmtFull(Date.now()),
+    '',
+    '【檔案說明】',
+    'report.html  摘要報告，用瀏覽器開啟即可閱讀、列印或存成 PDF。',
+    'events.csv   事件明細表，可用 Excel 開啟（UTF-8 BOM）。',
+    'data.json    完整原始資料，含每個事件的頻譜陣列與每秒取樣值。',
+    'audio/       各事件的錄音，檔名為「日期_時間_最大音量_主頻」。',
+    '             16 kHz 單聲道 WAV，未壓縮，含事發前 4 秒與事後 2 秒。',
+    '',
+    '【欄位說明】',
+    'Lmax_dBZ    事件期間的最大音量（Z 線性加權，不做頻率修正）',
+    'Lmax_dBC    最大音量（C 加權，保留低頻）',
+    'Lmax_dBA    最大音量（A 加權，模仿人耳，會大幅壓抑低頻）',
+    'Leq         事件期間的等效連續音量',
+    'C_minus_A   C 加權減 A 加權的差值。數值越大代表能量越集中在低頻；',
+    '            一般認為 15 dB 以上屬於低頻主導的噪音。',
+    '主頻Hz      該事件能量最強的頻率。多個事件的主頻若集中在同一數值附近，',
+    '            是結構或管路共振的特徵（共振腔尺寸固定，頻率才會固定）。',
+    '背景L90dB   事件發生當時的環境底噪（90% 時間超過的音量水準）。',
+    '觸發門檻dB  當時的自動偵測門檻，等於背景底噪加上設定的相對門檻值。',
+    '',
+    '【量測方法與限制】',
+    '量測工具：智慧型手機內建麥克風，Web Audio API，FFT 8192 點，',
+    '          依 IEC 61672 公式計算 A 加權與 C 加權。',
+    '校準偏移量：+' + cfg.cal + ' dB。',
+    '',
+    '重要：手機麥克風未經聲學校準，本記錄的「絕對音壓值」為估算值，',
+    '不等同於專業噪音計的讀數，不應直接用於判定是否符合法規管制標準。',
+    '但以下三項不受校準影響，可作為判斷依據：',
+    '  1. C 減 A 的差值（兩者同時量測，偏移量互相抵消）',
+    '  2. 各事件的主頻位置',
+    '  3. 事件的發生時間與次數分布',
+    '若需具法律效力的數據，仍應委託合格檢測機構以標準噪音計量測。',
+    ''
+  ].join('\r\n');
+}
+function reportHtmlDoc(){
+  const body = buildReport();
+  return '<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">'+
+    '<meta name="viewport" content="width=device-width,initial-scale=1">'+
+    '<title>噪音事件量測摘要 '+(cfg.place||'')+'</title><style>'+
+    'body{font-family:system-ui,"Noto Sans TC",sans-serif;max-width:780px;margin:0 auto;padding:28px 20px;line-height:1.6;color:#141B22;background:#fff}'+
+    'table{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0}'+
+    'th,td{text-align:left;padding:6px 9px;border-bottom:1px solid #E4E8ED}'+
+    'th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#7A8794}'+
+    'td.n{text-align:right;font-variant-numeric:tabular-nums;font-family:ui-monospace,monospace}'+
+    '.eyebrow{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#7A8794;font-weight:600}'+
+    '.note{background:#E6EDF5;border:1px solid #B7CBE4;border-radius:9px;padding:12px 14px;font-size:13.5px}'+
+    '.note.info{background:#E6EDF5}.tiny{font-size:11.5px;color:#7A8794}'+
+    'h3{margin:4px 0 10px;font-size:19px}.empty{color:#7A8794}'+
+    '.scroll-x{overflow-x:auto}b{color:#0F3A66}'+
+    '@media print{body{padding:0}.note{background:#F3F6FA}}'+
+    '</style></head><body>'+body+'</body></html>';
+}
+
+function csvText(){
+  const head=['日期時間','類型','持續秒數','Lmax_dBZ','Lmax_dBC','Lmax_dBA','Lpeak_dBZ','Leq_dBZ','Leq_dBA',
+    'C_minus_A','峰值因數dB','主頻Hz','窄峰Hz','窄峰超出dB','指紋比對','相似度','量測位置',
+    '觸發門檻dB','背景L90dB','有音檔','備註'];
+  const rows=[...S.events].sort((a,b)=>a.t0-b.t0).map(e=>[
+    fmtFull(e.t0), KIND_LABEL[evKind(e)]||'', e.dur.toFixed(2),
+    e.lmaxZ.toFixed(1), e.lmaxC.toFixed(1), e.lmaxA.toFixed(1),
+    e.lpeak!=null?e.lpeak.toFixed(1):'', e.leqZ.toFixed(1), e.leqA.toFixed(1),
+    e.cma.toFixed(1), e.crest!=null?e.crest.toFixed(1):'', e.peakHz,
+    e.tone?e.tone.hz:'', e.tone?e.tone.excess:'',
+    e.match?e.match.name:'', e.match?Math.round(e.match.sim*100)+'%':'',
+    e.spot||'', e.th.toFixed(1), e.l90===null?'':e.l90.toFixed(1),
+    e.audio?'是':'', (e.note||'').replace(/"/g,'""')
+  ]);
+  return '﻿'+[head,...rows].map(r=>r.map(c=>/[,"\n]/.test(String(c))?'"'+c+'"':c).join(',')).join('\r\n');
+}
+function jsonText(){
+  return JSON.stringify({ tool:'低頻噪音記錄儀', generated:new Date().toISOString(),
+    place:cfg.place, operator:cfg.who, calibrationOffsetDb:cfg.cal, calibrated:false,
+    micSettings:S.agc, thirdOctaveCenters:THIRD_OCT,
+    specBins:SPEC_BINS, specMaxHz:SPEC_MAXHZ,
+    events:S.events, markers:S.markers, references:S.refs, secondSamples:S.samples });
+}
+function exportCsv(){
+  if(!S.events.length){ toast('還沒有事件記錄。'); return; }
+  saveFile('噪音事件_'+new Date().toISOString().slice(0,10)+'.csv',
+           new Blob([csvText()],{type:'text/csv;charset=utf-8'}));
+}
+function exportJson(){
+  saveFile('噪音資料_'+new Date().toISOString().slice(0,10)+'.json',
+           new Blob([jsonText()],{type:'application/json'}));
+}
+function exportReport(){
+  if(!S.events.length){ toast('還沒有事件記錄。'); return; }
+  saveFile('噪音報告_'+new Date().toISOString().slice(0,10)+'.html',
+           new Blob([reportHtmlDoc()],{type:'text/html;charset=utf-8'}));
+}
+async function updateStore(){
+  let txt='事件 '+S.events.length+' 筆　每秒取樣 '+S.samples.length+' 筆';
+  let audioBytes=0;
+  try{ const all=await idbAll('audio'); audioBytes=all.reduce((s,a)=>s+(a.bytes||0),0); txt+='　音檔 '+all.length+' 個（'+(audioBytes/1048576).toFixed(1)+' MB）'; }catch(e){}
+  try{ if(navigator.storage&&navigator.storage.estimate){ const q=await navigator.storage.estimate();
+    txt+='<br>瀏覽器已用 '+(q.usage/1048576).toFixed(1)+' MB／可用 '+(q.quota/1073741824).toFixed(1)+' GB'; } }catch(e){}
+  $('#storeInfo').innerHTML=txt;
+}
+
+/* =========================================================================
+   UI 綁定
+   ========================================================================= */
+$('#nav').addEventListener('click', e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  $$('.nav button').forEach(x=>x.classList.toggle('on', x===b));
+  $$('.page').forEach(p=>p.classList.remove('on'));
+  $('#p-'+b.dataset.p).classList.add('on');
+  if(b.dataset.p==='charts') requestAnimationFrame(drawCharts);
+  if(b.dataset.p==='setup') updateStore();
+});
+$('#btnRun').addEventListener('click', ()=> S.running ? stop() : start());
+$('#btnMark').addEventListener('click', manualMark);
+$('#btnCsv').addEventListener('click', exportCsv);
+$('#btnJson').addEventListener('click', exportJson);
+$('#btnZip').addEventListener('click', exportZip);
+
+/* 情境標記 */
+document.querySelector('.markgrid').addEventListener('click', e=>{
+  const b = e.target.closest('button[data-mark]'); if(!b) return;
+  const v = b.dataset.mark;
+  if(v === '__custom'){
+    const box = $('#customMark');
+    box.style.display = box.style.display === 'none' ? 'flex' : 'none';
+    if(box.style.display === 'flex') $('#customMarkInput').focus();
+    return;
+  }
+  addMarker(v);
+});
+$('#customMarkOk').addEventListener('click', ()=>{
+  const v = $('#customMarkInput').value.trim();
+  if(!v){ toast('請先輸入標記內容。'); return; }
+  addMarker(v); $('#customMarkInput').value=''; $('#customMark').style.display='none';
+});
+$('#customMarkInput').addEventListener('keydown', e=>{ if(e.key==='Enter') $('#customMarkOk').click(); });
+
+/* 量測位置 */
+$('#spotInput').addEventListener('change', ()=>{ cfg.spot = $('#spotInput').value.trim(); saveCfg(); });
+
+/* 敲擊指紋 */
+$('#btnRef').addEventListener('click', ()=>{
+  const n = $('#refName').value.trim();
+  if(!n){ toast('請先填要敲哪裡，例如「系統櫃門板」。'); $('#refName').focus(); return; }
+  startRefCapture(n);
+});
+$('#refList').addEventListener('click', e=>{
+  const b = e.target.closest('.refdel'); if(!b) return;
+  S.refs = S.refs.filter(r=>r.id !== b.dataset.id);
+  saveRefs(); renderRefs();
+});
+$('#btnClear').addEventListener('click', async ()=>{
+  if(!confirm('確定清空所有事件、取樣與音檔？此操作無法復原。')) return;
+  await idbClear('events'); await idbClear('samples'); await idbClear('audio');
+  S.events=[]; S.samples=[]; openEv=null; renderEvents(); renderStats(); drawCharts(); updateStore();
+});
+$('#btnReport').addEventListener('click', ()=>{
+  cfg.place=$('#rpPlace').value; cfg.who=$('#rpWho').value; saveCfg();
+  $('#rpBody').innerHTML=buildReport(); $('#rpOut').style.display='';
+  $('#rpOut').scrollIntoView({behavior:'smooth', block:'start'});
+});
+$('#btnCopy').addEventListener('click', ()=>{
+  const txt=$('#rpBody').innerText;
+  navigator.clipboard.writeText(txt).then(()=>{ const b=$('#btnCopy'); b.textContent='已複製 ✓'; setTimeout(()=>b.textContent='複製文字',1600); })
+   .catch(()=>alert('複製失敗，請長按選取文字。'));
+});
+$('#btnPrint').addEventListener('click', ()=>window.print());
+
+function bindSlider(id, key, label, fmt){
+  const el=$(id), out=$(label);
+  el.value=cfg[key]; out.textContent=fmt?fmt(cfg[key]):cfg[key];
+  el.addEventListener('input', ()=>{ cfg[key]=parseFloat(el.value); out.textContent=fmt?fmt(cfg[key]):cfg[key]; saveCfg(); });
+}
+bindSlider('#calSlider','cal','#calVal', v=>v.toFixed(1));
+bindSlider('#thSlider','thresh','#thVal', v=>v.toFixed(0));
+bindSlider('#minDurSlider','minDur','#minDurVal', v=>v.toFixed(2));
+bindSlider('#floorSlider','floor','#floorVal', v=>v.toFixed(0));
+bindSlider('#impSlider','impDelta','#impVal', v=>v.toFixed(0));
+function bindCheck(id,key){ const el=$(id); el.checked=!!cfg[key];
+  el.addEventListener('change',()=>{ cfg[key]=el.checked; saveCfg(); if(key==='wake'&&el.checked&&S.running) requestWake(); }); }
+bindCheck('#optRec','rec'); bindCheck('#optWake','wake'); bindCheck('#optBeepGuard','clipGuard');
+bindCheck('#optImp','impOn');
+
+setInterval(()=>{ $('#clock').textContent = fmtClock(Date.now()); }, 1000);
+$('#clock').textContent = fmtClock(Date.now());
+let rz; addEventListener('resize', ()=>{ clearTimeout(rz); rz=setTimeout(()=>{ if($('#p-charts').classList.contains('on')) drawCharts(); if(S.running) paintLive(); },200); });
+addEventListener('beforeunload', ()=>{ flushSamples(); });
+
+function renderAgc(){
+  const host = $('#agcInfo'); if(!host) return;
+  if(!S.agc){ host.innerHTML = '麥克風處理狀態：開始監測後顯示。'; return; }
+  const yn = v => v === true ? '<b style="color:var(--signal)">開啟</b>' : v === false ? '關閉' : '未回報';
+  host.innerHTML = '麥克風實際設定：自動增益 '+yn(S.agc.autoGainControl)+
+    '　降噪 '+yn(S.agc.noiseSuppression)+'　回音消除 '+yn(S.agc.echoCancellation)+
+    '<br>取樣率 '+(S.agc.sampleRate||'—')+' Hz　聲道數 '+(S.agc.channelCount||'—')+
+    '<br>三項都顯示「關閉」，數據才能跨時段比較。顯示「開啟」代表系統忽略了設定，'+
+    '此時仍可用 C−A、窄峰與時間分布，但絕對音量不可比。';
+}
+
+/* 啟動 */
+(async function init(){
+  $('#rpPlace').value=cfg.place||''; $('#rpWho').value=cfg.who||'';
+  $('#spotInput').value=cfg.spot||'';
+  loadLocal(); renderMarkers(); renderRefs(); renderAgc();
+  try{
+    await openDB();
+    S.events=(await idbAll('events')).sort((a,b)=>b.t0-a.t0);
+    S.samples=(await idbAll('samples')).sort((a,b)=>a.t-b.t);
+    S.events.forEach(e=>{ if(!e.kind) e.kind = classifyEvent(e); });
+  }catch(e){
+    $('#micErr').innerHTML='<div class="note"><b>本機資料庫無法開啟。</b>'+(e.message||e)+'　無痕模式可能不支援，請用一般分頁。</div>';
+  }
+  renderEvents(); renderStats(); drawSpectrum(); drawTrace(); updateStore();
+  if(!window.isSecureContext){
+    $('#micErr').innerHTML='<div class="note"><b>此頁面不是安全來源（https）。</b>瀏覽器只允許 https 或 localhost 存取麥克風。</div>';
+  }
+})();
+</script>
