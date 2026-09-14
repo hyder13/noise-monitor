@@ -6,551 +6,572 @@
 <meta name="theme-color" content="#0D1318" media="(prefers-color-scheme: dark)">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;700&display=swap">
 <style>
+/* iOS Human Interface Guidelines 風格
+   系統字體、inset grouped list、44pt 觸控目標、標準色階 */
 :root{
-  --ink:#10161C; --ink-2:#1B242D; --ink-3:#2A3641;
-  --paper:#ECEEF1; --paper-2:#F6F7F9; --paper-3:#DFE3E8;
-  --bg:var(--paper-2); --surface:#FFFFFF; --surface-2:#F0F2F5;
-  --line:#D3D9E0; --line-soft:#E4E8ED;
-  --text:#141B22; --text-2:#4B5763; --text-3:#7A8794;
-  --signal:#D9541F;        /* 訊號橘：事件、警示 */
-  --signal-soft:#FBEDE6;
-  --lowfreq:#6B3FA0;       /* 低頻主導指標 */
-  --lowfreq-soft:#F0EAF7;
-  --calm:#1F6F5C;          /* 安靜、正常 */
-  --calm-soft:#E4F0EC;
-  --trace:#2F5E93;         /* 資料線 */
-  --trace-soft:#E6EDF5;
-  --grid:#C9D1DA;
-  --shadow:0 1px 2px rgba(16,22,28,.06), 0 4px 14px rgba(16,22,28,.05);
+  --bg:#F2F2F7;            /* systemGroupedBackground */
+  --surface:#FFFFFF;        /* secondarySystemGroupedBackground */
+  --surface-2:#E9E9EB;      /* tertiary fill */
+  --line:#C6C6C8;           /* separator */
+  --line-soft:#E5E5EA;
+  --text:#000000;           /* label */
+  --text-2:#3C3C43;         /* secondaryLabel */
+  --text-3:#8E8E93;         /* tertiaryLabel */
+  --signal:#FF6B00;         /* 訊號橘：事件、警示 */
+  --signal-soft:#FFF1E6;
+  --lowfreq:#8944D6;        /* 低頻紫 */
+  --lowfreq-soft:#F4ECFC;
+  --calm:#34C759;           /* systemGreen */
+  --calm-soft:#E7F9EC;
+  --trace:#007AFF;          /* systemBlue */
+  --trace-soft:#E8F2FF;
+  --grid:#D1D1D6;
   --r:10px;
-  --f-display:"Archivo","Noto Sans TC",system-ui,sans-serif;
-  --f-body:"IBM Plex Sans","Noto Sans TC",system-ui,sans-serif;
-  --f-mono:"IBM Plex Mono",ui-monospace,"Cascadia Mono",monospace;
+  --f-body:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,"Helvetica Neue","PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
+  --f-display:var(--f-body);
+  --f-mono:ui-monospace,"SF Mono",Menlo,"Cascadia Mono",monospace;
+  --gutter:16px;
 }
-:root:not([data-theme="light"]){ }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#0D1318; --surface:#151E26; --surface-2:#1B252E;
-    --line:#2B3843; --line-soft:#222D37;
-    --text:#E6EBF0; --text-2:#9DAAB6; --text-3:#6D7B88;
-    --signal:#FF7A45; --signal-soft:#2E1B12;
-    --lowfreq:#B98CE8; --lowfreq-soft:#241A33;
-    --calm:#4FBF9F; --calm-soft:#11271F;
-    --trace:#6FA3DE; --trace-soft:#141F2C;
-    --grid:#2A3742;
-    --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.25);
+    --bg:#000000; --surface:#1C1C1E; --surface-2:#2C2C2E;
+    --line:#38383A; --line-soft:#2C2C2E;
+    --text:#FFFFFF; --text-2:#EBEBF5; --text-3:#8E8E93;
+    --signal:#FF9F0A; --signal-soft:#2E1E08;
+    --lowfreq:#BF5AF2; --lowfreq-soft:#241433;
+    --calm:#30D158; --calm-soft:#0D2614;
+    --trace:#0A84FF; --trace-soft:#0A1E33;
+    --grid:#38383A;
   }
 }
 :root[data-theme="dark"]{
-  --bg:#0D1318; --surface:#151E26; --surface-2:#1B252E;
-  --line:#2B3843; --line-soft:#222D37;
-  --text:#E6EBF0; --text-2:#9DAAB6; --text-3:#6D7B88;
-  --signal:#FF7A45; --signal-soft:#2E1B12;
-  --lowfreq:#B98CE8; --lowfreq-soft:#241A33;
-  --calm:#4FBF9F; --calm-soft:#11271F;
-  --trace:#6FA3DE; --trace-soft:#141F2C;
-  --grid:#2A3742;
-  --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.25);
+  --bg:#000000; --surface:#1C1C1E; --surface-2:#2C2C2E;
+  --line:#38383A; --line-soft:#2C2C2E;
+  --text:#FFFFFF; --text-2:#EBEBF5; --text-3:#8E8E93;
+  --signal:#FF9F0A; --signal-soft:#2E1E08;
+  --lowfreq:#BF5AF2; --lowfreq-soft:#241433;
+  --calm:#30D158; --calm-soft:#0D2614;
+  --trace:#0A84FF; --trace-soft:#0A1E33;
+  --grid:#38383A;
 }
 
-*{box-sizing:border-box}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
 body{
   margin:0; background:var(--bg); color:var(--text);
-  font-family:var(--f-body); font-size:15px; line-height:1.55;
-  -webkit-text-size-adjust:100%;
+  font-family:var(--f-body); font-size:17px; line-height:1.4;
+  -webkit-text-size-adjust:100%; -webkit-font-smoothing:antialiased;
 }
-#app{max-width:720px; margin:0 auto; padding:0 16px 96px; padding-block-start:0}
+#app{max-width:640px; margin:0 auto; padding:0 var(--gutter) calc(72px + env(safe-area-inset-bottom));}
 
-/* ---------- 頂部狀態列 ---------- */
-.topbar{
-  position:sticky; top:0; z-index:30; background:var(--bg);
-  display:flex; align-items:center; gap:10px;
-  padding-block:12px 10px; border-bottom:1px solid var(--line-soft);
+/* ---------- 導覽列（大標題） ---------- */
+.navbar{
+  position:sticky; top:0; z-index:30;
+  background:color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter:saturate(180%) blur(20px);
+  margin:0 calc(var(--gutter) * -1); padding:0 var(--gutter);
+  display:flex; align-items:center; gap:10px; min-height:44px;
 }
-.brand{font-family:var(--f-display); font-weight:700; font-size:15px; letter-spacing:-.01em; white-space:nowrap}
-.brand .dot{display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--text-3); margin-right:7px; vertical-align:middle}
-body.running .brand .dot{background:var(--signal); animation:pulse 1.6s ease-in-out infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
-.topbar .spacer{flex:1}
-.clock{font-family:var(--f-mono); font-size:12px; color:var(--text-2); font-variant-numeric:tabular-nums}
+.navbar .status{display:flex; align-items:center; gap:6px; font-size:13px; color:var(--text-3)}
+.navbar .dot{width:8px; height:8px; border-radius:50%; background:var(--text-3); flex:none}
+body.running .navbar .dot{background:var(--signal); animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.2}}
+.navbar .spacer{flex:1}
+.navbar .clock{font-size:13px; color:var(--text-3); font-variant-numeric:tabular-nums}
+h1{
+  font-size:34px; font-weight:700; letter-spacing:-.4px; margin:2px 0 16px;
+  line-height:1.15; text-wrap:balance;
+}
 
-/* ---------- 通用 ---------- */
-.card{background:var(--surface); border:1px solid var(--line-soft); border-radius:var(--r); box-shadow:var(--shadow)}
-.pad{padding:14px}
-.stack{display:flex; flex-direction:column; gap:14px}
-.row{display:flex; gap:10px; align-items:center}
-/* 不做 uppercase：標籤裡含 dB、Hz 等單位，大小寫在聲學上有意義 */
-.eyebrow{
-  font-family:var(--f-display); font-size:11px; font-weight:600;
-  letter-spacing:.06em; color:var(--text-3);
+/* ---------- Inset grouped list ---------- */
+.group{background:var(--surface); border-radius:var(--r); overflow:hidden; margin-bottom:8px}
+.ghead{font-size:13px; color:var(--text-3); padding:18px 16px 7px; line-height:1.35}
+.ghead:first-child{padding-top:4px}
+.gfoot{font-size:13px; color:var(--text-3); padding:7px 16px 20px; line-height:1.4}
+.gfoot b{color:var(--text-2); font-weight:600}
+.row{display:flex; align-items:center; gap:12px; min-height:44px; padding:11px 16px; position:relative}
+.row + .row::before{
+  content:''; position:absolute; top:0; left:16px; right:0; height:1px;
+  background:var(--line-soft); transform:scaleY(.5);
 }
-h2{font-family:var(--f-display); font-size:17px; font-weight:700; margin:0; letter-spacing:-.01em; text-wrap:balance}
-h3{font-family:var(--f-display); font-size:14px; font-weight:600; margin:0}
-p{margin:0}
-.muted{color:var(--text-2); font-size:13px}
-.tiny{font-size:11.5px; color:var(--text-3); line-height:1.5}
-.mono{font-family:var(--f-mono); font-variant-numeric:tabular-nums}
-button{font-family:inherit; font-size:14px; cursor:pointer}
-:focus-visible{outline:2px solid var(--signal); outline-offset:2px; border-radius:4px}
-
-.btn{
-  border:1px solid var(--line); background:var(--surface); color:var(--text);
-  border-radius:8px; padding:9px 14px; font-weight:500; transition:background .15s,border-color .15s;
-}
-.btn:hover{background:var(--surface-2)}
-.btn-primary{background:var(--signal); border-color:var(--signal); color:#fff; font-weight:600}
-.btn-primary:hover{background:var(--signal); filter:brightness(1.08)}
-.btn-stop{background:var(--ink-2); border-color:var(--ink-2); color:#fff; font-weight:600}
-:root[data-theme="dark"] .btn-stop, :root:not([data-theme="light"]) .btn-stop{background:var(--surface-2); border-color:var(--line); color:var(--text)}
-.btn-sm{padding:6px 10px; font-size:12.5px; border-radius:7px}
-.btn-block{width:100%; justify-content:center; display:flex; align-items:center; gap:8px; padding:13px}
+.row .t{flex:1; min-width:0}
+.row .t b{display:block; font-size:17px; font-weight:400}
+.row .t span{display:block; font-size:13px; color:var(--text-3); line-height:1.35; margin-top:2px}
+.row .v{font-size:17px; color:var(--text-3); font-variant-numeric:tabular-nums; flex:none}
 
 /* ---------- 主讀數 ---------- */
-.readout{position:relative; overflow:hidden}
-.readout .grid3{display:grid; grid-template-columns:auto 1fr; gap:16px; align-items:end}
-.big{
-  font-family:var(--f-display); font-weight:700; font-size:64px; line-height:.86;
-  letter-spacing:-.045em; font-variant-numeric:tabular-nums; color:var(--text);
+.meter{background:var(--surface); border-radius:var(--r); padding:20px 16px 16px; margin-bottom:8px; text-align:center}
+.meter .big{
+  font-size:76px; font-weight:600; line-height:.92; letter-spacing:-3px;
+  font-variant-numeric:tabular-nums; display:block;
 }
-.big .u{font-size:17px; font-weight:600; letter-spacing:0; color:var(--text-3); margin-left:5px}
-.big.clip{color:var(--signal)}
-.subreads{display:flex; flex-direction:column; gap:5px; padding-bottom:5px}
-.sub{display:grid; grid-template-columns:auto 1fr auto; gap:8px; align-items:center}
-.sub .k{font-family:var(--f-body); font-size:11px; color:var(--text-3); font-weight:500; white-space:nowrap}
-.sub .v{font-family:var(--f-mono); font-size:12.5px; font-variant-numeric:tabular-nums; color:var(--text-2); text-align:right; min-width:52px}
-.bar{height:5px; border-radius:3px; background:var(--surface-2); overflow:hidden}
-.bar i{display:block; height:100%; width:0%; border-radius:3px; transition:width .09s linear}
-.bar.z i{background:var(--trace)} .bar.c i{background:var(--lowfreq)} .bar.a i{background:var(--calm)}
+.meter .big.clip{color:var(--signal)}
+.meter .unit{font-size:15px; color:var(--text-3); margin-top:4px; letter-spacing:0}
+.tracks{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; margin-top:18px;
+  background:var(--line-soft); border-radius:9px; overflow:hidden}
+.track{background:var(--surface); padding:9px 4px}
+.track .k{font-size:12px; color:var(--text-3); display:block}
+.track .n{font-size:20px; font-weight:600; font-variant-numeric:tabular-nums; display:block; line-height:1.25}
+.track.z .n{color:var(--trace)} .track.c .n{color:var(--lowfreq)} .track.a .n{color:var(--calm)}
 
-/* C-A 指標條 */
-.cma{margin-top:13px; padding-top:13px; border-top:1px dashed var(--line)}
-.cma-head{display:flex; justify-content:space-between; align-items:baseline; gap:8px}
-.cma-val{font-family:var(--f-mono); font-weight:600; font-size:22px; font-variant-numeric:tabular-nums}
-.cma-scale{position:relative; height:26px; margin-top:7px}
-.cma-track{position:absolute; top:8px; left:0; right:0; height:7px; border-radius:4px;
-  background:linear-gradient(90deg, var(--calm-soft) 0%, var(--calm-soft) 30%, var(--signal-soft) 45%, var(--lowfreq-soft) 65%, var(--lowfreq) 100%);
-  border:1px solid var(--line-soft);}
-.cma-needle{position:absolute; top:2px; width:3px; height:19px; border-radius:2px; background:var(--text); transition:left .12s ease-out; transform:translateX(-50%)}
-.cma-ticks{position:relative; height:13px; margin-top:1px}
-.cma-ticks span{position:absolute; transform:translateX(-50%); font-family:var(--f-mono); font-size:9.5px; color:var(--text-3)}
-.verdict{display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:600; padding:3px 9px; border-radius:20px}
-.v-low{background:var(--lowfreq-soft); color:var(--lowfreq)}
-.v-mid{background:var(--signal-soft); color:var(--signal)}
-.v-norm{background:var(--calm-soft); color:var(--calm)}
+/* C − A */
+.cma{background:var(--surface); border-radius:var(--r); padding:16px; margin-bottom:8px}
+.cma-top{display:flex; align-items:baseline; gap:10px}
+.cma-top .lbl{font-size:15px; flex:1}
+.cma-top .n{font-size:28px; font-weight:600; font-variant-numeric:tabular-nums; letter-spacing:-.5px}
+.cma-scale{position:relative; height:24px; margin-top:10px}
+.cma-track{position:absolute; top:9px; left:0; right:0; height:6px; border-radius:3px;
+  background:linear-gradient(90deg,var(--surface-2) 0%,var(--surface-2) 32%,var(--signal-soft) 45%,var(--lowfreq-soft) 62%,var(--lowfreq) 100%)}
+.cma-needle{position:absolute; top:3px; width:4px; height:18px; border-radius:2px;
+  background:var(--text); transition:left .12s ease-out; transform:translateX(-50%)}
+.cma-ticks{position:relative; height:14px}
+.cma-ticks span{position:absolute; transform:translateX(-50%); font-size:11px; color:var(--text-3);
+  font-variant-numeric:tabular-nums}
+.badges{display:flex; align-items:center; gap:8px; margin-top:8px; flex-wrap:wrap}
+.pill{font-size:13px; font-weight:600; padding:4px 11px; border-radius:14px}
+.p-low{background:var(--lowfreq-soft); color:var(--lowfreq)}
+.p-mid{background:var(--signal-soft); color:var(--signal)}
+.p-norm{background:var(--surface-2); color:var(--text-2)}
+.badges .hz{font-size:13px; color:var(--text-3); font-variant-numeric:tabular-nums}
+
+/* ---------- 按鈕 ---------- */
+button{font-family:inherit; font-size:17px; cursor:pointer}
+:focus-visible{outline:2px solid var(--trace); outline-offset:2px; border-radius:6px}
+.btn{
+  display:flex; align-items:center; justify-content:center; gap:7px; width:100%;
+  min-height:50px; padding:13px; border:none; border-radius:12px;
+  background:var(--surface); color:var(--trace); font-size:17px; font-weight:500;
+  margin-bottom:8px;
+}
+.btn:active{opacity:.55}
+.btn-primary{background:var(--signal); color:#fff; font-weight:600}
+.btn-stop{background:var(--surface); color:var(--signal); font-weight:600}
+.btn-sm{min-height:36px; padding:8px 14px; font-size:15px; width:auto; margin:0; border:none;
+  border-radius:9px; background:var(--surface-2); color:var(--trace); flex:none; font-weight:500}
+.btn[disabled]{opacity:.4}
+.btnrow{display:flex; gap:8px; margin-bottom:8px}
+.btnrow .btn{margin:0}
+
+/* ---------- Segmented control ---------- */
+.seg{display:flex; background:var(--surface-2); border-radius:9px; padding:2px; gap:2px; margin-bottom:14px}
+.seg button{
+  flex:1; min-height:32px; padding:6px 4px; border:none; border-radius:7px;
+  background:none; color:var(--text); font-size:13px; font-weight:500;
+}
+.seg button.on{background:var(--surface); font-weight:600; box-shadow:0 1px 3px rgba(0,0,0,.1)}
+
+/* ---------- iOS switch ---------- */
+.sw{position:relative; width:51px; height:31px; flex:none}
+.sw input{position:absolute; inset:0; width:100%; height:100%; margin:0; opacity:0; z-index:2}
+.sw i{position:absolute; inset:0; background:var(--surface-2); border-radius:16px; transition:background .25s}
+.sw i::after{
+  content:''; position:absolute; top:2px; left:2px; width:27px; height:27px;
+  background:#fff; border-radius:50%; transition:transform .25s;
+  box-shadow:0 3px 8px rgba(0,0,0,.15), 0 1px 1px rgba(0,0,0,.16);
+}
+.sw input:checked + i{background:var(--calm)}
+.sw input:checked + i::after{transform:translateX(20px)}
+
+/* ---------- 表單 ---------- */
+input[type=text],input[type=number],select,textarea{
+  width:100%; font-family:inherit; font-size:17px; padding:0; border:none;
+  background:none; color:var(--text); min-height:26px;
+}
+input::placeholder{color:var(--text-3)}
+select{font-size:15px}
+.stepper{display:flex; align-items:center; gap:14px}
+input[type=range]{width:100%; accent-color:var(--signal); height:28px}
+.slider-row{padding:8px 16px 14px}
+.slider-row .lbl{display:flex; align-items:baseline; gap:8px; font-size:15px; margin-bottom:2px}
+.slider-row .lbl .v{margin-left:auto; font-size:17px; font-weight:600; color:var(--signal);
+  font-variant-numeric:tabular-nums}
 
 /* ---------- canvas ---------- */
-.canvas-wrap{position:relative}
-canvas{display:block; width:100%; border-radius:8px; background:var(--surface-2); touch-action:pan-y}
-.canvas-label{position:absolute; top:7px; left:9px; font-family:var(--f-mono); font-size:10px; color:var(--text-3); pointer-events:none; background:color-mix(in srgb, var(--surface-2) 80%, transparent); padding:1px 5px; border-radius:4px}
-.legend{display:flex; flex-wrap:wrap; gap:12px; margin-top:8px}
-.legend i{display:inline-block; width:11px; height:3px; border-radius:2px; vertical-align:middle; margin-right:5px}
+.canvas-card{background:var(--surface); border-radius:var(--r); padding:12px 12px 8px; margin-bottom:8px}
+canvas{display:block; width:100%; border-radius:8px; touch-action:pan-y}
+.legend{display:flex; flex-wrap:wrap; gap:14px; margin-top:9px; padding:0 4px; font-size:12px; color:var(--text-3)}
+.legend i{display:inline-block; width:12px; height:3px; border-radius:2px; vertical-align:middle; margin-right:5px}
 
-/* ---------- 統計格 ---------- */
-.stats{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line-soft); border-radius:8px; overflow:hidden; border:1px solid var(--line-soft)}
-.stat{background:var(--surface); padding:9px 8px; text-align:center}
-.stat .n{font-family:var(--f-mono); font-weight:600; font-size:17px; font-variant-numeric:tabular-nums; display:block; line-height:1.2}
-.stat .l{font-size:10px; color:var(--text-3); letter-spacing:.02em}
+/* ---------- 統計 ---------- */
+.stats{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line-soft);
+  border-radius:var(--r); overflow:hidden; margin-bottom:8px}
+.stat{background:var(--surface); padding:12px 6px; text-align:center}
+.stat .n{font-size:22px; font-weight:600; font-variant-numeric:tabular-nums; display:block; line-height:1.15}
+.stat .l{font-size:11px; color:var(--text-3); display:block; margin-top:3px}
 
-/* ---------- 事件清單 ---------- */
-.ev{border-bottom:1px solid var(--line-soft); padding:11px 14px; display:block; width:100%; text-align:left; background:none; border-left:3px solid transparent}
-.ev:last-child{border-bottom:none}
+/* ---------- 事件 ---------- */
+.ev{display:block; width:100%; text-align:left; background:var(--surface); border:none;
+  padding:12px 16px 12px 14px; position:relative; border-left:3px solid transparent; font-family:inherit}
+.ev + .ev::before{content:''; position:absolute; top:0; left:14px; right:0; height:1px;
+  background:var(--line-soft); transform:scaleY(.5)}
 .ev.k-lowfreq{border-left-color:var(--lowfreq)}
 .ev.k-impulse{border-left-color:var(--signal)}
 .ev.k-manual{border-left-color:var(--trace)}
-.markgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:7px}
-.markgrid button{padding:8px 4px; font-size:12.5px}
-.marklist{display:flex; flex-wrap:wrap; gap:6px; margin-top:10px}
-.marklist span{font-family:var(--f-mono); font-size:11px; background:var(--trace-soft); color:var(--trace);
-  padding:2px 7px; border-radius:5px; font-weight:500}
-.kindbar{display:flex; gap:7px; flex-wrap:wrap}
-.kindbar b{font-family:var(--f-mono); font-size:12.5px; padding:5px 11px; border-radius:7px; font-weight:600;
-  border:1px solid var(--line-soft); background:var(--surface)}
-.kindbar b i{font-style:normal; font-weight:400; color:var(--text-3); font-size:11px; margin-left:4px}
-.kb-lowfreq{color:var(--lowfreq)} .kb-impulse{color:var(--signal)}
-.kb-manual{color:var(--trace)} .kb-other{color:var(--text-2)}
-.reflist{margin-top:10px; display:flex; flex-direction:column; gap:6px}
-.refitem{display:flex; align-items:center; gap:9px; padding:7px 10px; background:var(--surface-2);
-  border:1px solid var(--line-soft); border-radius:8px}
-.refitem > div{flex:1; min-width:0; font-size:13px}
-.refitem b{font-weight:600}
-.refitem .tiny{display:inline}
-.ev-top{display:flex; align-items:baseline; gap:9px; flex-wrap:wrap}
-.ev-time{font-family:var(--f-mono); font-size:13px; font-weight:600; font-variant-numeric:tabular-nums}
-.ev-date{font-family:var(--f-mono); font-size:11px; color:var(--text-3)}
-.ev-db{margin-left:auto; font-family:var(--f-mono); font-size:15px; font-weight:600; font-variant-numeric:tabular-nums}
-.ev-meta{display:flex; gap:11px; flex-wrap:wrap; margin-top:3px; font-family:var(--f-mono); font-size:11px; color:var(--text-2)}
+.ev:active{background:var(--surface-2)}
+.ev-top{display:flex; align-items:baseline; gap:8px}
+.ev-time{font-size:17px; font-weight:600; font-variant-numeric:tabular-nums}
+.ev-date{font-size:13px; color:var(--text-3); font-variant-numeric:tabular-nums}
+.ev-db{margin-left:auto; font-size:19px; font-weight:600; font-variant-numeric:tabular-nums}
+.ev-db em{font-style:normal; font-size:12px; color:var(--text-3); font-weight:400}
+.ev-meta{display:flex; gap:12px; flex-wrap:wrap; margin-top:4px; font-size:13px; color:var(--text-3);
+  font-variant-numeric:tabular-nums}
 .ev-meta b{font-weight:600; color:var(--lowfreq)}
-.ev-note{margin-top:5px; font-size:12.5px; color:var(--text-2); font-style:italic}
-.ev-detail{padding:0 14px 13px; border-bottom:1px solid var(--line-soft); background:var(--surface-2)}
-.chip{display:inline-block; font-family:var(--f-mono); font-size:10px; padding:1px 6px; border-radius:4px; background:var(--lowfreq-soft); color:var(--lowfreq); font-weight:600}
-.chip.g{background:var(--calm-soft); color:var(--calm)}
+.ev-note{margin-top:5px; font-size:14px; color:var(--text-2)}
+.ev-detail{background:var(--surface-2); padding:14px 16px}
+.chip{display:inline-block; font-size:11px; padding:2px 8px; border-radius:10px; font-weight:600;
+  background:var(--lowfreq-soft); color:var(--lowfreq)}
 .chip.o{background:var(--signal-soft); color:var(--signal)}
 .chip.b{background:var(--trace-soft); color:var(--trace)}
 
-/* ---------- 表單 ---------- */
-label.field{display:block; margin-bottom:13px}
-label.field > span{display:block; font-size:12.5px; font-weight:500; color:var(--text-2); margin-bottom:5px}
-input[type=text],input[type=number],select,textarea{
-  width:100%; font-family:var(--f-body); font-size:15px; padding:9px 11px;
-  border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--text);
-}
-input[type=number]{font-family:var(--f-mono)}
-input[type=range]{width:100%; accent-color:var(--signal)}
-.switch{display:flex; align-items:flex-start; gap:11px; padding:11px 0; border-bottom:1px solid var(--line-soft)}
-.switch:last-of-type{border-bottom:none}
-.switch input{width:19px; height:19px; margin:2px 0 0; accent-color:var(--signal); flex:none}
-.switch .t{flex:1}
-.switch .t b{display:block; font-weight:600; font-size:14px}
+/* ---------- 提示卡 ---------- */
+.note{background:var(--signal-soft); border-radius:var(--r); padding:13px 15px; font-size:14px;
+  line-height:1.45; margin-bottom:8px; color:var(--text-2)}
+.note b{color:var(--signal); font-weight:600}
+.note.info{background:var(--trace-soft)}
+.note.info b{color:var(--trace)}
+.empty{text-align:center; padding:44px 20px; color:var(--text-3); font-size:15px; background:var(--surface);
+  border-radius:var(--r)}
 
-/* ---------- 底部導覽 ---------- */
-.nav{
+/* ---------- 標記與指紋 ---------- */
+.markgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; padding:12px 16px 14px}
+.markgrid button{min-height:44px; border:none; border-radius:9px; background:var(--surface-2);
+  color:var(--trace); font-size:14px; font-weight:500; padding:6px 2px}
+.markgrid button:active{opacity:.55}
+.marklist{display:flex; flex-wrap:wrap; gap:6px; padding:0 16px 14px}
+.marklist span{font-size:12px; background:var(--trace-soft); color:var(--trace); padding:3px 9px;
+  border-radius:10px; font-variant-numeric:tabular-nums}
+.kindbar{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px}
+.kindbar b{font-size:14px; padding:7px 13px; border-radius:10px; font-weight:600; background:var(--surface)}
+.kindbar b i{font-style:normal; font-weight:400; color:var(--text-3); font-size:12px; margin-left:4px}
+.kb-lowfreq{color:var(--lowfreq)} .kb-impulse{color:var(--signal)}
+.kb-manual{color:var(--trace)} .kb-other{color:var(--text-2)}
+
+/* ---------- 底部 tab bar ---------- */
+.tabbar{
   position:fixed; left:0; right:0; bottom:0; z-index:40;
   display:grid; grid-template-columns:repeat(5,1fr);
-  background:color-mix(in srgb, var(--surface) 94%, transparent);
-  backdrop-filter:blur(12px); border-top:1px solid var(--line);
+  background:color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter:saturate(180%) blur(20px);
+  border-top:1px solid var(--line-soft);
   padding-bottom:env(safe-area-inset-bottom);
 }
-.nav button{
-  background:none; border:none; padding:9px 2px 10px; color:var(--text-3);
+.tabbar button{
+  background:none; border:none; padding:7px 2px 6px; color:var(--text-3);
   display:flex; flex-direction:column; align-items:center; gap:3px;
-  font-size:10.5px; font-weight:500; border-top:2px solid transparent; margin-top:-1px;
+  font-size:10px; font-weight:500; min-height:49px;
 }
-.nav button.on{color:var(--signal); border-top-color:var(--signal)}
-.nav svg{width:19px; height:19px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round}
+.tabbar button.on{color:var(--signal)}
+.tabbar svg{width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:1.8;
+  stroke-linecap:round; stroke-linejoin:round}
 
-.page{display:none; padding-top:14px}
+.page{display:none}
 .page.on{display:block}
-.note{background:var(--signal-soft); border:1px solid color-mix(in srgb,var(--signal) 28%, transparent); border-radius:var(--r); padding:12px 13px; font-size:13px; line-height:1.55}
-.note b{color:var(--signal)}
-.note.info{background:var(--trace-soft); border-color:color-mix(in srgb,var(--trace) 26%, transparent)}
-.note.info b{color:var(--trace)}
-.empty{text-align:center; padding:40px 20px; color:var(--text-3); font-size:13.5px}
-table{width:100%; border-collapse:collapse; font-size:12.5px}
-th,td{text-align:left; padding:6px 8px; border-bottom:1px solid var(--line-soft)}
-th{font-family:var(--f-display); font-size:10.5px; letter-spacing:.04em; color:var(--text-3); font-weight:600}
+table{width:100%; border-collapse:collapse; font-size:14px}
+th,td{text-align:left; padding:7px 8px; border-bottom:1px solid var(--line-soft)}
+th{font-size:12px; color:var(--text-3); font-weight:600}
 td.n{font-family:var(--f-mono); font-variant-numeric:tabular-nums; text-align:right}
-.scroll-x{overflow-x:auto}
-audio{width:100%; height:36px; margin-top:9px}
-.hint{font-size:11.5px; color:var(--text-3); margin-top:4px; line-height:1.5}
+.scroll-x{overflow-x:auto; -webkit-overflow-scrolling:touch}
+audio{width:100%; height:36px; margin-top:10px}
+.reflist{padding:0 16px 14px; display:flex; flex-direction:column; gap:8px}
+.refitem{display:flex; align-items:center; gap:10px; padding:10px 12px; background:var(--surface-2);
+  border-radius:9px; font-size:15px}
+.refitem > div{flex:1; min-width:0}
+.refitem .tiny{font-size:12px; color:var(--text-3); display:block; margin-top:1px}
+#toast{font-size:15px}
+/* 由 JS 動態產生的內容（報告、事件詳情）會用到 */
+.eyebrow{font-size:13px; color:var(--text-3); font-weight:600}
+.tiny{font-size:12px; color:var(--text-3); line-height:1.45}
+.field{display:block; margin-top:12px}
+.field > span{display:block; font-size:13px; color:var(--text-3); margin-bottom:5px}
+.field input[type=text]{background:var(--surface); border:1px solid var(--line-soft);
+  border-radius:9px; padding:10px 12px; font-size:16px; min-height:42px}
 @media (prefers-reduced-motion: reduce){*{animation:none !important; transition:none !important}}
-@media (max-width:380px){ .big{font-size:54px} .stats{grid-template-columns:repeat(2,1fr)} }
+@media (max-width:360px){
+  .meter .big{font-size:64px}
+  .markgrid{grid-template-columns:repeat(2,1fr)}
+}
 </style>
 
 <div id="app">
-  <div class="topbar">
-    <div class="brand"><span class="dot"></span>低頻噪音記錄儀</div>
+  <div class="navbar">
+    <div class="status"><span class="dot"></span><span id="runState">未啟動</span></div>
     <div class="spacer"></div>
-    <div class="clock mono" id="clock">--:--:--</div>
+    <div class="clock" id="clock">--:--:--</div>
   </div>
 
   <!-- ============ 監測 ============ -->
   <section class="page on" id="p-live">
-    <div class="stack">
+    <h1>監測</h1>
 
-      <div class="card pad readout">
-        <div class="grid3">
-          <div>
-            <div class="eyebrow" style="margin-bottom:5px">目前音量 dB(Z)</div>
-            <div class="big" id="bigZ">--<span class="u">dB</span></div>
-          </div>
-          <div class="subreads">
-            <div class="sub"><span class="k">Z 線性</span><span class="bar z"><i id="barZ"></i></span><span class="v" id="valZ">--</span></div>
-            <div class="sub"><span class="k">C 加權</span><span class="bar c"><i id="barC"></i></span><span class="v" id="valC">--</span></div>
-            <div class="sub"><span class="k">A 加權</span><span class="bar a"><i id="barA"></i></span><span class="v" id="valA">--</span></div>
-          </div>
-        </div>
-
-        <div class="cma">
-          <div class="cma-head">
-            <div><span class="eyebrow">低頻主導指標　C − A</span></div>
-            <div class="cma-val" id="cmaVal">--</div>
-          </div>
-          <div class="cma-scale">
-            <div class="cma-track"></div>
-            <div class="cma-needle" id="cmaNeedle" style="left:0%"></div>
-          </div>
-          <div class="cma-ticks">
-            <span style="left:0%">0</span><span style="left:25%">10</span>
-            <span style="left:50%">20</span><span style="left:75%">30</span><span style="left:100%">40</span>
-          </div>
-          <div style="margin-top:7px; display:flex; align-items:center; gap:9px; flex-wrap:wrap">
-            <span class="verdict v-norm" id="cmaVerdict">等待訊號</span>
-            <span class="tiny" id="peakHz" style="font-family:var(--f-mono)">主頻 -- Hz</span>
-          </div>
-        </div>
+    <div class="meter">
+      <span class="big" id="bigZ">--</span>
+      <div class="unit">dB(Z)</div>
+      <div class="tracks">
+        <div class="track z"><span class="k">Z 線性</span><span class="n" id="valZ">--</span></div>
+        <div class="track c"><span class="k">C 加權</span><span class="n" id="valC">--</span></div>
+        <div class="track a"><span class="k">A 加權</span><span class="n" id="valA">--</span></div>
       </div>
+    </div>
 
-      <button class="btn btn-primary btn-block" id="btnRun">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
-        <span id="btnRunTxt">開始監測</span>
-      </button>
-      <div id="micErr"></div>
-
-      <div class="card pad">
-        <div class="row" style="margin-bottom:9px">
-          <div class="eyebrow">即時頻譜　0 – 500 Hz</div>
-          <div class="spacer" style="flex:1"></div>
-          <span class="tiny mono" id="specInfo">—</span>
-        </div>
-        <div class="canvas-wrap"><canvas id="cvSpec" height="150"></canvas></div>
-        <div class="hint">水錘與管路共振會在 20–150 Hz 出現<b style="color:var(--lowfreq)">固定位置的窄峰</b>；腳步聲與撞擊聲是寬頻、位置不固定。紫色區為低頻帶。</div>
+    <div class="cma">
+      <div class="cma-top">
+        <span class="lbl">低頻主導　C − A</span>
+        <span class="n" id="cmaVal">--</span>
       </div>
-
-      <div class="card pad">
-        <div class="row" style="margin-bottom:9px">
-          <div class="eyebrow">近 3 分鐘音量軌跡</div>
-          <div class="spacer" style="flex:1"></div>
-          <span class="tiny mono" id="l90Info">底噪 -- dB</span>
-        </div>
-        <div class="canvas-wrap"><canvas id="cvTrace" height="110"></canvas></div>
-        <div class="legend tiny">
-          <span><i style="background:var(--trace)"></i>dB(Z)</span>
-          <span><i style="background:var(--lowfreq)"></i>dB(C)</span>
-          <span><i style="background:var(--calm)"></i>dB(A)</span>
-          <span><i style="background:var(--signal)"></i>觸發門檻</span>
-        </div>
+      <div class="cma-scale">
+        <div class="cma-track"></div>
+        <div class="cma-needle" id="cmaNeedle" style="left:0%"></div>
       </div>
-
-      <div class="stats">
-        <div class="stat"><span class="n" id="stEvents">0</span><span class="l">事件數</span></div>
-        <div class="stat"><span class="n" id="stDur">0:00</span><span class="l">已監測</span></div>
-        <div class="stat"><span class="n" id="stLmax">--</span><span class="l">最大 dB(Z)</span></div>
-        <div class="stat"><span class="n" id="stL90">--</span><span class="l">背景 L90</span></div>
+      <div class="cma-ticks">
+        <span style="left:0%">0</span><span style="left:25%">10</span>
+        <span style="left:50%">20</span><span style="left:75%">30</span><span style="left:100%">40</span>
       </div>
-
-      <button class="btn btn-block" id="btnMark">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-        現在聽到了 — 手動標記
-      </button>
-      <p class="hint" style="margin-top:-4px">自動門檻沒抓到、但你確實聽見的時候按這個。會存下前後各數秒的完整資料。</p>
-
-      <div class="card pad">
-        <div class="eyebrow" style="margin-bottom:3px">量測位置</div>
-        <p class="tiny" style="margin-bottom:8px">只有一支手機時，換位置分次測、比較同類事件的音量大小，最響的位置最接近聲源。</p>
-        <input type="text" id="spotInput" placeholder="例：客廳沙發旁／系統櫃前／主臥靠牆" style="margin-bottom:13px">
-        <div class="eyebrow" style="margin-bottom:3px">情境標記</div>
-        <p class="tiny" style="margin-bottom:8px">做了什麼就按一下，會標在趨勢圖的時間軸上。<b>木作「趴」一聲多半來自熱脹冷縮</b>，跟開關冷氣後的降溫升溫高度相關——不標記就看不出這層關係。</p>
-        <div class="markgrid">
-          <button class="btn btn-sm" data-mark="開冷氣">開冷氣</button>
-          <button class="btn btn-sm" data-mark="關冷氣">關冷氣</button>
-          <button class="btn btn-sm" data-mark="關總水閥">關總水閥</button>
-          <button class="btn btn-sm" data-mark="開總水閥">開總水閥</button>
-          <button class="btn btn-sm" data-mark="樓上用水">樓上用水</button>
-          <button class="btn btn-sm" data-mark="__custom">其他…</button>
-        </div>
-        <div id="customMark" class="row" style="display:none; margin-top:8px; gap:7px">
-          <input type="text" id="customMarkInput" placeholder="標記內容" maxlength="30">
-          <button class="btn btn-sm" id="customMarkOk" style="flex:none">加入</button>
-        </div>
-        <div id="markList" class="marklist"></div>
+      <div class="badges">
+        <span class="pill p-norm" id="cmaVerdict">等待訊號</span>
+        <span class="hz" id="peakHz">主頻 -- Hz</span>
       </div>
+    </div>
+    <p class="gfoot" style="padding-top:0">差值愈大，能量愈集中在低頻。<b>15 dB 以上</b>視為低頻主導。</p>
 
-      <div class="card pad">
-        <div class="eyebrow" style="margin-bottom:3px">敲擊指紋 — 找出聲音從哪裡來</div>
-        <p class="tiny" style="margin-bottom:9px">
-          單支手機測不出方位（低頻的波長有好幾公尺，遠大於手機兩顆麥克風的間距，物理上解不出方向）。
-          可行的做法是比對<b>共振指紋</b>：每個結構被敲擊時都會在自己的固有頻率上響，那組頻率就是它的身分證。
-          把可疑的地方各敲一次存成參考，之後自動抓到的每一聲都會告訴你最像哪一個。
-        </p>
-        <div class="row" style="gap:7px">
-          <input type="text" id="refName" placeholder="例：系統櫃門板／餐桌桌面／天花板" maxlength="20">
-          <button class="btn btn-sm btn-primary" id="btnRef" style="flex:none">錄製</button>
-        </div>
-        <p class="hint">按下後有 4 秒，<b>用指節敲擊該處一到兩下</b>。敲的時候手機放在平常的量測位置別移動，這樣傳遞路徑才和真實事件一致。</p>
-        <div id="refList" class="reflist"></div>
-      </div>
+    <button class="btn btn-primary" id="btnRun">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.2" fill="currentColor"/></svg>
+      <span id="btnRunTxt">開始監測</span>
+    </button>
+    <div id="micErr"></div>
 
-      <div class="note" id="wakeNote">
-        <b>掛整晚前先確認：</b>手機插著電、螢幕保持開啟（本頁會自動請求防止休眠）。瀏覽器一旦被系統休眠就會停止收音，這是網頁版的先天限制——打包成 App 之後才能真正背景執行。
+    <div class="stats">
+      <div class="stat"><span class="n" id="stEvents">0</span><span class="l">事件</span></div>
+      <div class="stat"><span class="n" id="stDur">0:00</span><span class="l">已監測</span></div>
+      <div class="stat"><span class="n" id="stLmax">--</span><span class="l">最大 dB</span></div>
+      <div class="stat"><span class="n" id="stL90">--</span><span class="l">底噪 L90</span></div>
+    </div>
+
+    <button class="btn" id="btnMark">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      現在聽到了
+    </button>
+    <p class="gfoot" style="padding-top:0">自動門檻沒抓到、但你確實聽見時按這個。會存下前後各數秒的資料。</p>
+
+    <div class="ghead">即時頻譜　0–500 Hz</div>
+    <div class="canvas-card"><canvas id="cvSpec" height="150"></canvas></div>
+    <p class="gfoot" style="padding-top:0">水錘與管路共振會在 20–150 Hz 出現<b>固定位置的窄峰</b>；腳步聲與撞擊聲是寬頻、位置不固定。</p>
+
+    <div class="ghead">近 3 分鐘　<span id="l90Info"></span></div>
+    <div class="canvas-card">
+      <canvas id="cvTrace" height="110"></canvas>
+      <div class="legend">
+        <span><i style="background:var(--trace)"></i>dB(Z)</span>
+        <span><i style="background:var(--lowfreq)"></i>dB(C)</span>
+        <span><i style="background:var(--calm)"></i>dB(A)</span>
+        <span><i style="background:var(--signal)"></i>門檻</span>
+        <span id="specInfo" style="margin-left:auto"></span>
       </div>
+    </div>
+
+    <div class="ghead">量測位置</div>
+    <div class="group">
+      <div class="row"><input type="text" id="spotInput" placeholder="客廳沙發旁／系統櫃前"></div>
+    </div>
+    <p class="gfoot">換位置分次測，比較同類事件的音量——最響的位置最接近聲源。</p>
+
+    <div class="ghead">情境標記</div>
+    <div class="group">
+      <div class="markgrid">
+        <button data-mark="開冷氣">開冷氣</button>
+        <button data-mark="關冷氣">關冷氣</button>
+        <button data-mark="關總水閥">關總水閥</button>
+        <button data-mark="開總水閥">開總水閥</button>
+        <button data-mark="樓上用水">樓上用水</button>
+        <button data-mark="__custom">其他…</button>
+      </div>
+      <div id="customMark" class="row" style="display:none">
+        <input type="text" id="customMarkInput" placeholder="標記內容" maxlength="30">
+        <button class="btn-sm" id="customMarkOk">加入</button>
+      </div>
+      <div id="markList" class="marklist"></div>
+    </div>
+    <p class="gfoot">做了什麼就按一下，會標在趨勢圖的時間軸上。<b>木作「趴」一聲多半來自熱脹冷縮</b>，與開關冷氣後的溫度變化相關。</p>
+
+    <div class="ghead">敲擊指紋</div>
+    <div class="group">
+      <div class="row">
+        <input type="text" id="refName" placeholder="系統櫃門板／餐桌／天花板" maxlength="20">
+        <button class="btn-sm" id="btnRef">錄製</button>
+      </div>
+      <div id="refList" class="reflist"></div>
+    </div>
+    <p class="gfoot">按下後有 4 秒，<b>用指節敲擊該處一到兩下</b>。之後自動抓到的每一聲都會比對最像哪一個。手機要放在平常的量測位置別移動。</p>
+
+    <div class="note" id="wakeNote">
+      <b>掛整晚前先確認：</b>手機插著電、螢幕保持開啟。瀏覽器被系統休眠就會停止收音，這是網頁版的先天限制。
     </div>
   </section>
 
   <!-- ============ 事件 ============ -->
   <section class="page" id="p-events">
-    <div class="stack">
-      <div class="row">
-        <h2>事件記錄</h2>
-        <div class="spacer" style="flex:1"></div>
-        <select id="evFilter" style="width:auto; font-size:13px; padding:6px 9px">
-          <option value="all">全部類型</option>
-          <option value="lowfreq">低頻共振</option>
-          <option value="impulse">衝擊音</option>
-          <option value="manual">手動標記</option>
-          <option value="other">未分類</option>
-        </select>
-      </div>
-      <div class="kindbar" id="kindBar"></div>
-      <div class="card" id="evList"><div class="empty">還沒有記錄。回到「監測」分頁開始收音。</div></div>
-      <button class="btn btn-primary btn-block" id="btnZip">打包全部證據（ZIP）</button>
-      <p class="hint" style="margin-top:-4px">一個壓縮檔內含：摘要報告、事件明細 CSV、完整 JSON、以及每個事件的 WAV 錄音。可整包寄給建商或聲學技師。</p>
-      <div class="row" style="gap:8px">
-        <button class="btn btn-sm" id="btnCsv">只要 CSV</button>
-        <button class="btn btn-sm" id="btnJson">只要 JSON</button>
-        <div class="spacer" style="flex:1"></div>
-        <button class="btn btn-sm" id="btnClear" style="color:var(--signal)">清空</button>
-      </div>
+    <h1>事件</h1>
+    <div class="seg" id="evFilter">
+      <button data-f="all" class="on">全部</button>
+      <button data-f="lowfreq">低頻共振</button>
+      <button data-f="impulse">衝擊音</button>
+      <button data-f="manual">手動</button>
     </div>
+    <div class="kindbar" id="kindBar"></div>
+    <div class="group" id="evList"><div class="empty">還沒有記錄<br><span style="font-size:13px">到「監測」分頁開始收音</span></div></div>
+    <button class="btn btn-primary" id="btnZip" style="margin-top:14px">打包全部證據（ZIP）</button>
+    <p class="gfoot" style="padding-top:0">含摘要報告、事件明細 CSV、完整 JSON、每個事件的 WAV 錄音。可整包寄給建商或聲學技師。</p>
+    <div class="btnrow">
+      <button class="btn" id="btnCsv">只要 CSV</button>
+      <button class="btn" id="btnJson">只要 JSON</button>
+    </div>
+    <button class="btn" id="btnClear" style="color:var(--signal)">清空全部記錄</button>
   </section>
 
   <!-- ============ 圖表 ============ -->
   <section class="page" id="p-charts">
-    <div class="stack">
-      <h2>趨勢分析</h2>
-      <div class="card pad">
-        <div class="eyebrow" style="margin-bottom:3px">事件的時段分布</div>
-        <p class="tiny" style="margin-bottom:9px">每天的哪個鐘點最常發生。若集中在早晚洗澡、沖廁時段，就是指向用水行為的直接證據。</p>
-        <div class="canvas-wrap"><canvas id="cvHour" height="140"></canvas></div>
-      </div>
-      <div class="card pad">
-        <div class="eyebrow" style="margin-bottom:3px">音量趨勢線</div>
-        <p class="tiny" style="margin-bottom:9px">整段監測期間的音量變化，橘點為偵測到的事件。</p>
-        <div class="canvas-wrap"><canvas id="cvTrend" height="150"></canvas></div>
-        <div class="legend tiny">
-          <span><i style="background:var(--trace)"></i>dB(Z) 每秒</span>
-          <span><i style="background:var(--calm)"></i>dB(A)</span>
-          <span><i style="background:var(--signal)"></i>事件</span>
-        </div>
-      </div>
-      <div class="card pad">
-        <div class="eyebrow" style="margin-bottom:3px">事件主頻分布</div>
-        <p class="tiny" style="margin-bottom:9px">每個事件能量最強的頻率。<b>若多數事件擠在同一個頻率附近，那就是共振</b>——共振腔（管路）的尺寸固定，頻率才會固定。</p>
-        <div class="canvas-wrap"><canvas id="cvFreq" height="130"></canvas></div>
-      </div>
-      <div class="card pad">
-        <div class="eyebrow" style="margin-bottom:3px">平均事件頻譜</div>
-        <p class="tiny" style="margin-bottom:9px">所有事件頻譜的疊加平均，比單一事件更能看出穩定的共振峰。</p>
-        <div class="canvas-wrap"><canvas id="cvAvgSpec" height="130"></canvas></div>
+    <h1>趨勢</h1>
+
+    <div class="ghead">事件的時段分布</div>
+    <div class="canvas-card"><canvas id="cvHour" height="140"></canvas></div>
+    <p class="gfoot">集中在早晚洗澡、沖廁時段，就是指向用水行為的直接證據。紫色為夜間 22–06 時。</p>
+
+    <div class="ghead">音量趨勢線</div>
+    <div class="canvas-card">
+      <canvas id="cvTrend" height="150"></canvas>
+      <div class="legend">
+        <span><i style="background:var(--trace)"></i>dB(Z)</span>
+        <span><i style="background:var(--calm)"></i>dB(A)</span>
+        <span><i style="background:var(--signal)"></i>衝擊音</span>
+        <span><i style="background:var(--lowfreq)"></i>低頻共振</span>
       </div>
     </div>
+    <p class="gfoot">藍色虛線是你按下的情境標記。</p>
+
+    <div class="ghead">事件主頻分布</div>
+    <div class="canvas-card"><canvas id="cvFreq" height="130"></canvas></div>
+    <p class="gfoot"><b>多數事件擠在同一個頻率附近就是共振</b>——共振腔的尺寸固定，頻率才會固定。</p>
+
+    <div class="ghead">平均事件頻譜</div>
+    <div class="canvas-card"><canvas id="cvAvgSpec" height="130"></canvas></div>
+    <p class="gfoot">所有事件頻譜的疊加平均，比單一事件更能看出穩定的共振峰。</p>
   </section>
 
   <!-- ============ 報告 ============ -->
   <section class="page" id="p-report">
-    <div class="stack">
-      <h2>溝通報告</h2>
-      <p class="muted">產生一份可以直接貼給建商、管委會或聲學技師的摘要。數據取自目前所有記錄。</p>
-      <div class="card pad">
-        <label class="field"><span>地點描述</span><input type="text" id="rpPlace" placeholder="例：○○社區 12 樓 A 戶　主臥室"></label>
-        <label class="field" style="margin-bottom:0"><span>量測者 / 聯絡方式</span><input type="text" id="rpWho" placeholder="選填"></label>
+    <h1>報告</h1>
+
+    <div class="group">
+      <div class="row"><div class="t"><b style="font-size:15px; color:var(--text-3)">地點</b></div></div>
+      <div class="row"><input type="text" id="rpPlace" placeholder="○○社區 12 樓 A 戶　主臥室"></div>
+      <div class="row"><input type="text" id="rpWho" placeholder="量測者／聯絡方式（選填）"></div>
+    </div>
+    <button class="btn btn-primary" id="btnReport">產生報告</button>
+
+    <div id="rpOut" style="display:none">
+      <div class="group" style="padding:16px"><div class="scroll-x" id="rpBody"></div></div>
+      <div class="btnrow">
+        <button class="btn" id="btnCopy">複製文字</button>
+        <button class="btn" id="btnPrint">列印／PDF</button>
       </div>
-      <button class="btn btn-primary btn-block" id="btnReport">產生報告</button>
-      <div class="card pad" id="rpOut" style="display:none">
-        <div class="scroll-x" id="rpBody"></div>
-        <div class="row" style="margin-top:13px; gap:8px">
-          <button class="btn btn-sm" id="btnCopy">複製文字</button>
-          <button class="btn btn-sm" id="btnPrint">列印 / 存 PDF</button>
-        </div>
-      </div>
-      <div class="note info">
-        <b>談判前先做這個對照實驗。</b>只有一支手機時，最有力的做法是分時段對照：<br>
-        ① 關閉自家總水閥 30 分鐘監測 → 若聲音仍在，代表不是自家管路。<br>
-        ② 請樓上在約定時間沖水／開關水龍頭，同步監測 → 看事件是否跟著出現。<br>
-        ③ 挑一段全棟最安靜的深夜時段測背景 L90 → 當成對照基準。<br>
-        每段實驗都用「手動標記」按鈕標出起訖點，報告裡就會留下時間軸。
-      </div>
+    </div>
+
+    <div class="note info">
+      <b>談判前先做對照實驗。</b><br>
+      ① 關自家總水閥 30 分鐘——聲音仍在，代表不是你家的管路。<br>
+      ② 冰箱拔電 10 分鐘——排除 60 Hz 電源假陽性。<br>
+      ③ 請樓上在約定時間沖水，看事件是否跟著出現。<br>
+      ④ 深夜最安靜時段測背景 L90 當基準。<br>
+      每段實驗都用情境標記按下起訖點。
     </div>
   </section>
 
   <!-- ============ 設定 ============ -->
   <section class="page" id="p-setup">
-    <div class="stack">
-      <h2>設定與校準</h2>
+    <h1>設定</h1>
 
-      <div class="card pad">
-        <div class="eyebrow" style="margin-bottom:9px">分貝校準</div>
-        <div class="note" style="margin-bottom:13px">
-          <b>先讀這段。</b>手機麥克風出廠沒有聲學校準，任何 App 給的絕對分貝值都是估算。
-          未校準時：<b>絕對數值不可信</b>，但 <b>C−A 差值、峰值因數、主頻位置、事件時間分布、前後趨勢完全可信</b>——
-          而這幾樣才是判斷聲音性質與來源的關鍵。所以沒有分貝計也能用，只是報告上要標明未校準。
-        </div>
-        <label class="field">
-          <span>校準偏移量　<span class="mono" id="calVal">115</span> dB</span>
-          <input type="range" id="calSlider" min="80" max="140" step="0.5" value="115">
-        </label>
-        <p class="hint" style="margin-top:-6px">
-          這個值等於麥克風的滿刻度音壓，手機多落在 <b>110–125</b> 之間，預設 115。
-          有分貝計或另一支已校準手機的話：兩台並排對同一個穩定聲源（例如抽油煙機），
-          拖動滑桿讓上方 dB(A) 讀數與對方一致即可。
-        </p>
-        <div id="agcInfo" class="hint" style="margin-top:9px; padding-top:9px; border-top:1px dashed var(--line)">
-          麥克風處理狀態：開始監測後顯示。
-        </div>
+    <div class="ghead">分貝校準</div>
+    <div class="group">
+      <div class="slider-row">
+        <div class="lbl">校準偏移量<span class="v"><span id="calVal">115</span> dB</span></div>
+        <input type="range" id="calSlider" min="80" max="140" step="0.5" value="115">
       </div>
+    </div>
+    <p class="gfoot">等於麥克風的滿刻度音壓，手機多落在 <b>110–125</b>。有分貝計的話兩台並排對同一個穩定聲源，拖動滑桿讓 dB(A) 讀數一致。</p>
 
-      <div class="card pad">
-        <div class="eyebrow" style="margin-bottom:6px">事件偵測</div>
-        <label class="field">
-          <span>觸發門檻：超過背景 L90 <span class="mono" id="thVal">10</span> dB</span>
-          <input type="range" id="thSlider" min="3" max="25" step="1" value="10">
-        </label>
-        <label class="field">
-          <span>最短持續時間 <span class="mono" id="minDurVal">0.20</span> 秒</span>
-          <input type="range" id="minDurSlider" min="0.05" max="2" step="0.05" value="0.2">
-        </label>
-        <label class="field">
-          <span>絕對下限（低於此值一律不觸發）<span class="mono" id="floorVal">35</span> dB</span>
-          <input type="range" id="floorSlider" min="20" max="70" step="1" value="35">
-        </label>
-        <p class="hint" style="margin-top:-6px">門檻是<b>相對於背景底噪</b>的，所以白天吵、深夜靜都能自動適應。抓到太多雜訊就把門檻調高。</p>
-        <div class="switch" style="border-top:1px dashed var(--line); margin-top:11px; padding-top:11px">
-          <input type="checkbox" id="optImp" checked>
-          <div class="t"><b>衝擊音偵測</b>
-            <span class="tiny">「趴」一聲往往只有 20–50 毫秒，撐不到上面的持續時間門檻，會被整個漏掉。
-            這個偵測器逐取樣追蹤真實峰值，只要音量瞬間躍升就立刻記錄。要抓木作彈跳聲、敲擊聲一定要開。</span></div>
-        </div>
-        <label class="field" style="margin-bottom:0">
-          <span>衝擊靈敏度：瞬間躍升超過 <span class="mono" id="impVal">14</span> dB 即記錄</span>
-          <input type="range" id="impSlider" min="6" max="25" step="1" value="14">
-        </label>
-        <p class="hint">數字越小越敏感。抓到太多關門、腳步聲就調高；完全抓不到你聽見的那一聲就調低。</p>
-      </div>
+    <div class="group">
+      <div class="row"><div class="t" id="agcInfo" style="font-size:13px; color:var(--text-3)">麥克風處理狀態：開始監測後顯示</div></div>
+    </div>
+    <p class="gfoot">三項都要「關閉」，數據才能跨時段比較。</p>
 
-      <div class="card pad">
-        <div class="eyebrow" style="margin-bottom:3px">錄音</div>
-        <div class="switch">
-          <input type="checkbox" id="optRec" checked>
-          <div class="t"><b>事件自動錄音</b>
-            <span class="tiny">存下「事發前 4 秒 + 事件全程 + 事後 2 秒」的 WAV，16 kHz 單聲道，約 32 KB/秒。
-            會錄到家人講話，介意就關掉——關掉之後數據與圖表照常運作。</span></div>
-        </div>
-        <div class="switch">
-          <input type="checkbox" id="optWake" checked>
-          <div class="t"><b>防止螢幕休眠</b>
-            <span class="tiny">監測時保持螢幕開啟，避免瀏覽器被系統暫停而漏錄。請同時插電。</span></div>
-        </div>
-        <div class="switch">
-          <input type="checkbox" id="optBeepGuard" checked>
-          <div class="t"><b>過載保護提示</b>
-            <span class="tiny">音量接近麥克風飽和時把讀數標成橘色，提醒該遠離聲源，否則數值會被削平。</span></div>
-        </div>
-      </div>
+    <div class="note info">
+      <b>未校準也能用。</b>C−A 差值、窄峰位置、峰值因數、事件時間分布都不受校準影響——這幾樣才是判斷聲音性質與來源的關鍵。只有絕對音量需要校準。
+    </div>
 
-      <div class="card pad">
-        <div class="eyebrow" style="margin-bottom:9px">儲存狀態</div>
-        <div id="storeInfo" class="mono" style="font-size:12.5px; color:var(--text-2)">—</div>
+    <div class="ghead">事件偵測</div>
+    <div class="group">
+      <div class="slider-row">
+        <div class="lbl">觸發門檻　超過底噪<span class="v"><span id="thVal">10</span> dB</span></div>
+        <input type="range" id="thSlider" min="3" max="25" step="1" value="10">
       </div>
+      <div class="slider-row">
+        <div class="lbl">最短持續時間<span class="v"><span id="minDurVal">0.20</span> 秒</span></div>
+        <input type="range" id="minDurSlider" min="0.05" max="2" step="0.05" value="0.2">
+      </div>
+      <div class="slider-row">
+        <div class="lbl">絕對下限<span class="v"><span id="floorVal">35</span> dB</span></div>
+        <input type="range" id="floorSlider" min="20" max="70" step="1" value="35">
+      </div>
+    </div>
+    <p class="gfoot">門檻是<b>相對於背景底噪</b>的，白天吵、深夜靜都能自動適應。抓到太多雜訊就調高。</p>
 
-      <div class="note info">
-        <b>為什麼要看 C−A？</b>A 加權模仿人耳對低頻不敏感的特性，會把 50 Hz 的能量壓掉將近 30 dB。
-        水錘共振恰好落在那裡——用一般噪音 App 測會顯示「才 45 分貝，沒超標」，
-        那份數據反而會被拿來證明你沒事。C 加權保留低頻，
-        <b>兩者的差值愈大，代表能量愈集中在低頻</b>，這是國際上判定低頻噪音問題的通用做法。
+    <div class="ghead">衝擊音</div>
+    <div class="group">
+      <div class="row">
+        <div class="t"><b>偵測「趴」一聲</b><span>只有 20–50 毫秒，撐不到持續時間門檻</span></div>
+        <label class="sw"><input type="checkbox" id="optImp" checked><i></i></label>
       </div>
+      <div class="slider-row">
+        <div class="lbl">靈敏度　瞬間躍升<span class="v"><span id="impVal">14</span> dB</span></div>
+        <input type="range" id="impSlider" min="6" max="25" step="1" value="14">
+      </div>
+    </div>
+    <p class="gfoot">數字愈小愈敏感。抓到太多關門聲就調高；抓不到你聽見的那一聲就調低。</p>
+
+    <div class="ghead">錄音與電源</div>
+    <div class="group">
+      <div class="row">
+        <div class="t"><b>事件自動錄音</b><span>事發前 4 秒 + 全程 + 事後 2 秒，約 32 KB/秒</span></div>
+        <label class="sw"><input type="checkbox" id="optRec" checked><i></i></label>
+      </div>
+      <div class="row">
+        <div class="t"><b>防止螢幕休眠</b><span>避免瀏覽器被系統暫停而漏錄</span></div>
+        <label class="sw"><input type="checkbox" id="optWake" checked><i></i></label>
+      </div>
+      <div class="row">
+        <div class="t"><b>過載提示</b><span>接近麥克風飽和時把讀數標成橘色</span></div>
+        <label class="sw"><input type="checkbox" id="optBeepGuard" checked><i></i></label>
+      </div>
+    </div>
+    <p class="gfoot">錄音會錄到家人講話。介意就關掉——關掉之後數據與圖表照常運作。</p>
+
+    <div class="ghead">儲存狀態</div>
+    <div class="group">
+      <div class="row"><div class="t" id="storeInfo" style="font-size:14px; color:var(--text-2)">—</div></div>
+    </div>
+    <p class="gfoot">全部存在這支手機裡，不會上傳。清除瀏覽器資料會一併刪除，請定期用 ZIP 匯出備份。</p>
+
+    <div class="note">
+      <b>為什麼要看 C−A？</b>A 加權模仿人耳對低頻不敏感的特性，會把 50 Hz 的能量壓掉將近 30 dB。水錘共振恰好落在那裡——用一般噪音 App 測會顯示「才 45 分貝，沒超標」，那份數據反而會被拿來證明你沒事。C 加權保留低頻，兩者的差值愈大，代表能量愈集中在低頻。
     </div>
   </section>
 </div>
 
-<nav class="nav" id="nav">
-  <button data-p="live" class="on"><svg viewBox="0 0 24 24"><path d="M3 12h3l3-8 4 16 3-8h5"/></svg>監測</button>
-  <button data-p="events"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/><circle cx="19.5" cy="18" r="1.6" fill="currentColor" stroke="none"/></svg>事件</button>
-  <button data-p="charts"><svg viewBox="0 0 24 24"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 16v-5M12.5 16V8M17 16v-3"/></svg>圖表</button>
-  <button data-p="report"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 14h6M9 17h4"/></svg>報告</button>
-  <button data-p="setup"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 9 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 4.6 9a1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z"/></svg>設定</button>
+<nav class="tabbar" id="nav">
+  <button data-p="live" class="on"><svg viewBox="0 0 24 24"><path d="M3 12h3.2l2.8-7.5 4 15 2.8-7.5H21"/></svg>監測</button>
+  <button data-p="events"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h9"/><circle cx="3.8" cy="6" r="1.4" fill="currentColor" stroke="none"/><circle cx="3.8" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="3.8" cy="18" r="1.4" fill="currentColor" stroke="none"/></svg>事件</button>
+  <button data-p="charts"><svg viewBox="0 0 24 24"><path d="M4 20V4"/><path d="M4 20h16"/><path d="M8.5 17V12M13 17V7M17.5 17v-3"/></svg>趨勢</button>
+  <button data-p="report"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>報告</button>
+  <button data-p="setup"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 9 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 4.6 9a1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z"/></svg>設定</button>
 </nav>
 
 <script>
@@ -709,6 +730,7 @@ async function start(){
   S.trace=[]; S.l90ring=[]; S.l90=null; S.lmaxSession=-Infinity;
   document.body.classList.add('running');
   $('#btnRunTxt').textContent = '停止監測';
+  $('#runState').textContent = '監測中';
   $('#btnRun').classList.remove('btn-primary'); $('#btnRun').classList.add('btn-stop');
   if(cfg.wake) requestWake();
   loop();
@@ -835,6 +857,7 @@ function stop(){
   S.running = false;
   document.body.classList.remove('running');
   $('#btnRunTxt').textContent = '開始監測';
+  $('#runState').textContent = '已停止';
   $('#btnRun').classList.add('btn-primary'); $('#btnRun').classList.remove('btn-stop');
   if(S.inEvent) closeEvent(Date.now());
   try{ S.stream && S.stream.getTracks().forEach(t=>t.stop()); }catch(e){}
@@ -1112,7 +1135,8 @@ function manualMark(){
   S.inEvent.manual = true;
   beginRec();
   setTimeout(()=>{ if(S.inEvent && S.inEvent.manual) closeEvent(Date.now()); }, 4000);
-  const b=$('#btnMark'); b.textContent='已標記 ✓'; setTimeout(()=>{ b.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>現在聽到了 — 手動標記'; }, 1600);
+  const b=$('#btnMark'); b.textContent='已標記';
+  setTimeout(()=>{ b.innerHTML='<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>現在聽到了'; }, 1600);
 }
 
 /* =========================================================================
@@ -1193,30 +1217,24 @@ function fitCanvas(cv){
 }
 
 function paintLive(){
-  // 數字
-  const z = isFinite(S.dbZ)? S.dbZ : 0;
-  $('#bigZ').innerHTML = (z>0?z.toFixed(1):'--')+'<span class="u">dB</span>';
+  $('#bigZ').textContent = isFinite(S.dbZ) && S.dbZ > 0 ? S.dbZ.toFixed(1) : '--';
   $('#bigZ').classList.toggle('clip', cfg.clipGuard && S.clipping);
   $('#valZ').textContent = isFinite(S.dbZ)? S.dbZ.toFixed(1) : '--';
   $('#valC').textContent = isFinite(S.dbC)? S.dbC.toFixed(1) : '--';
   $('#valA').textContent = isFinite(S.dbA)? S.dbA.toFixed(1) : '--';
-  const pct = v => clamp((v-20)/(100-20)*100, 0, 100);
-  $('#barZ').style.width = pct(S.dbZ)+'%';
-  $('#barC').style.width = pct(S.dbC)+'%';
-  $('#barA').style.width = pct(S.dbA)+'%';
 
   const cma = S.cma;
-  $('#cmaVal').textContent = (cma>=0?'+':'')+cma.toFixed(1)+' dB';
+  $('#cmaVal').textContent = isFinite(cma) ? (cma>=0?'+':'')+cma.toFixed(1) : '--';
   $('#cmaNeedle').style.left = clamp(cma/40*100,0,100)+'%';
   const vd = $('#cmaVerdict');
-  if(!isFinite(cma) || S.dbZ < cfg.floor-8){ vd.className='verdict v-norm'; vd.textContent='訊號太弱'; }
-  else if(cma >= 20){ vd.className='verdict v-low'; vd.textContent='強烈低頻主導'; $('#cmaVal').style.color=css('--lowfreq'); }
-  else if(cma >= 15){ vd.className='verdict v-low'; vd.textContent='低頻主導'; $('#cmaVal').style.color=css('--lowfreq'); }
-  else if(cma >= 10){ vd.className='verdict v-mid'; vd.textContent='偏低頻'; $('#cmaVal').style.color=css('--signal'); }
-  else { vd.className='verdict v-norm'; vd.textContent='一般噪音'; $('#cmaVal').style.color=''; }
+  if(!isFinite(cma) || S.dbZ < cfg.floor-8){ vd.className='pill p-norm'; vd.textContent='訊號太弱'; $('#cmaVal').style.color=''; }
+  else if(cma >= 20){ vd.className='pill p-low'; vd.textContent='強烈低頻主導'; $('#cmaVal').style.color=css('--lowfreq'); }
+  else if(cma >= 15){ vd.className='pill p-low'; vd.textContent='低頻主導'; $('#cmaVal').style.color=css('--lowfreq'); }
+  else if(cma >= 10){ vd.className='pill p-mid'; vd.textContent='偏低頻'; $('#cmaVal').style.color=css('--signal'); }
+  else { vd.className='pill p-norm'; vd.textContent='一般噪音'; $('#cmaVal').style.color=''; }
   $('#peakHz').textContent = '主頻 '+(S.peakHz? Math.round(S.peakHz):'--')+' Hz';
-  $('#specInfo').textContent = S.clipping ? '⚠ 訊號過載' : (S.ctx? Math.round(S.ctx.sampleRate/1000)+' kHz / '+S.analyser.fftSize+' pt':'—');
-  $('#l90Info').textContent = S.l90===null? '底噪 計算中' : '底噪 L90 '+S.l90.toFixed(1)+' dB';
+  $('#specInfo').textContent = S.clipping ? '訊號過載' : (S.ctx? Math.round(S.ctx.sampleRate/1000)+' kHz':'');
+  $('#l90Info').textContent = S.l90===null? '' : '底噪 '+S.l90.toFixed(1)+' dB';
 
   drawSpectrum(); drawTrace(); renderStats();
 }
@@ -1310,11 +1328,11 @@ function renderStats(){
 /* =========================================================================
    事件清單
    ========================================================================= */
-let openEv = null;
+let openEv = null, evFilterValue = 'all';
 function evKind(e){ return e.kind || classifyEvent(e); }
 function renderEvents(){
   renderKindBar();
-  const host = $('#evList'); const f = $('#evFilter').value;
+  const host = $('#evList'); const f = evFilterValue;
   let list = S.events;
   if(f!=='all') list = list.filter(e=>evKind(e)===f);
   if(!list.length){ host.innerHTML='<div class="empty">'+(S.events.length?'目前篩選條件沒有符合的記錄。':'還沒有記錄。回到「監測」分頁開始收音。')+'</div>'; return; }
@@ -1436,7 +1454,12 @@ $('#evList').addEventListener('change', async e => {
   const id = e.target.dataset.id, ev = S.events.find(x=>x.id===id);
   if(ev){ ev.note = e.target.value; await idbPut('events', ev); }
 });
-$('#evFilter').addEventListener('change', renderEvents);
+$('#evFilter').addEventListener('click', e=>{
+  const b = e.target.closest('button[data-f]'); if(!b) return;
+  evFilterValue = b.dataset.f;
+  $$('#evFilter button').forEach(x=>x.classList.toggle('on', x===b));
+  openEv = null; renderEvents();
+});
 
 /* =========================================================================
    圖表分頁
@@ -1917,7 +1940,7 @@ async function updateStore(){
    ========================================================================= */
 $('#nav').addEventListener('click', e=>{
   const b=e.target.closest('button'); if(!b) return;
-  $$('.nav button').forEach(x=>x.classList.toggle('on', x===b));
+  $$('.tabbar button').forEach(x=>x.classList.toggle('on', x===b));
   $$('.page').forEach(p=>p.classList.remove('on'));
   $('#p-'+b.dataset.p).classList.add('on');
   if(b.dataset.p==='charts') requestAnimationFrame(drawCharts);
