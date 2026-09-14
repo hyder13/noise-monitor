@@ -136,6 +136,15 @@ h1{
 .p-mid{background:var(--signal-soft); color:var(--signal)}
 .p-norm{background:var(--surface-2); color:var(--text-2)}
 .badges .hz{font-size:13px; color:var(--text-3); font-variant-numeric:tabular-nums}
+.lfrow{display:flex; align-items:center; gap:10px; margin-top:12px; padding-top:12px;
+  border-top:1px solid var(--line-soft)}
+.lfrow > div{flex:1; min-width:0}
+.lfrow .k{display:block; font-size:13px; color:var(--text-2)}
+.lfrow .sub2{display:block; font-size:11px; color:var(--text-3); margin-top:1px;
+  font-variant-numeric:tabular-nums}
+.lfrow .n{font-size:26px; font-weight:600; font-variant-numeric:tabular-nums;
+  letter-spacing:-.5px; color:var(--lowfreq)}
+.lfrow .n.hot{color:var(--signal)}
 
 /* ---------- 按鈕 ---------- */
 button{font-family:inherit; font-size:17px; cursor:pointer}
@@ -158,7 +167,7 @@ button{font-family:inherit; font-size:17px; cursor:pointer}
 /* ---------- Segmented control ---------- */
 .seg{display:flex; background:var(--surface-2); border-radius:9px; padding:2px; gap:2px; margin-bottom:14px}
 .seg button{
-  flex:1; min-height:32px; padding:6px 4px; border:none; border-radius:7px;
+  flex:1; min-height:32px; padding:6px 2px; border:none; border-radius:7px;
   background:none; color:var(--text); font-size:13px; font-weight:500;
 }
 .seg button.on{background:var(--surface); font-weight:600; box-shadow:0 1px 3px rgba(0,0,0,.1)}
@@ -208,6 +217,7 @@ canvas{display:block; width:100%; touch-action:pan-y}
 .ev + .ev::before{content:''; position:absolute; top:0; left:14px; right:0; height:1px;
   background:var(--line-soft); transform:scaleY(.5)}
 .ev.k-lowfreq{border-left-color:var(--lowfreq)}
+.ev.k-waterhammer{border-left-color:var(--trace)}
 .ev.k-impulse{border-left-color:var(--signal)}
 .ev.k-manual{border-left-color:var(--trace)}
 .ev:active{background:var(--surface-2)}
@@ -247,6 +257,7 @@ canvas{display:block; width:100%; touch-action:pan-y}
 .kindbar b{font-size:14px; padding:7px 13px; border-radius:10px; font-weight:600; background:var(--surface)}
 .kindbar b i{font-style:normal; font-weight:400; color:var(--text-3); font-size:12px; margin-left:4px}
 .kb-lowfreq{color:var(--lowfreq)} .kb-impulse{color:var(--signal)}
+.kb-waterhammer{color:var(--trace)}
 .kb-manual{color:var(--trace)} .kb-other{color:var(--text-2)}
 
 /* ---------- 底部 tab bar ---------- */
@@ -333,8 +344,14 @@ audio{width:100%; height:36px; margin-top:10px}
         <span class="pill p-norm" id="cmaVerdict">等待訊號</span>
         <span class="hz" id="peakHz">主頻 -- Hz</span>
       </div>
+      <div class="lfrow">
+        <div><span class="k">低頻音量 Leq,LF　20–200 Hz</span>
+          <span class="sub2" id="lfNote">底噪計算中</span></div>
+        <span class="n" id="lfVal">--</span>
+      </div>
     </div>
-    <p class="gfoot" style="padding-top:0">差值愈大，能量愈集中在低頻。<b>15 dB 以上</b>視為低頻主導。</p>
+    <p class="gfoot" style="padding-top:0">C−A 是整個頻譜的比值，中高頻一吵就會被稀釋。
+    <b>Leq,LF 只看 20–200 Hz</b>，聽到嗡嗡聲時看這個數字有沒有跳，比 C−A 可靠。</p>
 
     <button class="btn btn-primary" id="btnRun">
       <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.2" fill="currentColor"/></svg>
@@ -415,6 +432,7 @@ audio{width:100%; height:36px; margin-top:10px}
     <h1>事件</h1>
     <div class="seg" id="evFilter">
       <button data-f="all" class="on">全部</button>
+      <button data-f="waterhammer">水錘型</button>
       <button data-f="lowfreq">低頻共振</button>
       <button data-f="impulse">衝擊音</button>
       <button data-f="manual">手動</button>
@@ -543,6 +561,27 @@ audio{width:100%; height:36px; margin-top:10px}
     </div>
     <p class="gfoot">數字愈小愈敏感。抓到太多關門聲就調高；抓不到你聽見的那一聲就調低。</p>
 
+    <div class="ghead">低頻偵測</div>
+    <div class="group">
+      <div class="row">
+        <div class="t"><b>獨立偵測低頻事件</b><span>不受上面的全頻段門檻限制</span></div>
+        <label class="sw"><input type="checkbox" id="optLF" checked><i></i></label>
+      </div>
+      <div class="slider-row">
+        <div class="lbl">低頻靈敏度　超過低頻底噪<span class="v"><span id="lfThVal">6</span> dB</span></div>
+        <input type="range" id="lfThSlider" min="3" max="20" step="1" value="6">
+      </div>
+      <div class="slider-row">
+        <div class="lbl">低頻最低音量<span class="v"><span id="lfFloorVal">25</span> dB</span></div>
+        <input type="range" id="lfFloorSlider" min="15" max="70" step="1" value="25">
+      </div>
+      <div class="row"><div class="t"><b>目前低頻門檻</b><span id="lfNowNote">開始監測後依低頻底噪計算</span></div>
+        <span class="v" id="lfNow" style="color:var(--lowfreq); font-weight:600">--</span></div>
+    </div>
+    <p class="gfoot">管路共振的音量常只有 40–50 dB，全頻段門檻一調高就會被擋掉。
+    這條線獨立運作，所以<b>上面設 55 擋掉日常吵雜，這裡設低一點照樣抓得到共振</b>。
+    低頻事件要求持續至少 0.5 秒，避免把一次性碰撞誤判成共振。</p>
+
     <div class="ghead">錄音與電源</div>
     <div class="group">
       <div class="row">
@@ -644,6 +683,7 @@ const cfg = Object.assign({
   // 115 dB 是 dBFS→SPL 偏移量的常見起點（開源分貝計慣用值；MEMS 麥克風推算多落在 110–125）
   cal: 115, thresh: 10, minDur: 0.2, floor: 35,
   impOn: true, impDelta: 14, audioCap: 200, sampleDays: 14,
+  lfOn: true, lfThresh: 6, lfFloor: 25,
   rec: true, wake: true, clipGuard: true, place:'', who:'', spot:''
 }, JSON.parse(localStorage.getItem(CFG_KEY) || '{}'));
 function saveCfg(){ try{ localStorage.setItem(CFG_KEY, JSON.stringify(cfg)); }catch(e){} }
@@ -690,6 +730,8 @@ const S = {
   // 真實峰值追蹤（在 PCM 層計算，不會漏掉 20 ms 的瞬間脈衝）
   blockPeak:0, blockSum:0, blockN:0, peakDb:-Infinity, crest:0, slowDb:-Infinity,
   impulseArmed:true, lastImpulse:0,
+  // 低頻帶（20–200 Hz，A 加權）獨立的讀數、底噪與事件狀態
+  dbLF:-Infinity, l90LF:null, lfRing:[], lfAgg:null, aboveLFSince:0,
   // 錄音環形緩衝（16 kHz）
   RS:16000, ring:null, ringLen:0, ringPos:0, ringFilled:false,
   recActive:null, decim:3, decimAcc:0, decimCnt:0
@@ -753,6 +795,10 @@ async function start(){
     S.wWeights.a[i] = Math.pow(10, aWeightDb(f)/10);
     S.wWeights.c[i] = Math.pow(10, cWeightDb(f)/10);
   }
+  // Leq,LF 的頻帶範圍：20–200 Hz 共 11 個 1/3 八音度帶的上下緣
+  // （環境部方法 NIEA P205.93C 的定義，法規的低頻管制值就是用這個算的）
+  S.iLF0 = Math.max(1, Math.round(17.8/S.binHz));
+  S.iLF1 = Math.min(S.nBins-1, Math.round(224.5/S.binHz));
 
   // 錄音環形緩衝：8 秒 @16 kHz
   S.ringLen = S.RS*8; S.ring = new Float32Array(S.ringLen); S.ringPos=0; S.ringFilled=false;
@@ -939,9 +985,11 @@ function measure(){
   const iMin = Math.max(1, Math.floor(8/S.binHz));
   const iMax = Math.min(S.nBins-1, Math.floor(20000/S.binHz));
   const iLowMax = Math.min(S.nBins-1, Math.floor(SPEC_MAXHZ/S.binHz));
+  let pLF = 0;
   for(let i=iMin;i<=iMax;i++){
     const p = Math.pow(10, S.fftBuf[i]/10);
     pZ += p; pA += p*S.wWeights.a[i]; pC += p*S.wWeights.c[i];
+    if(i>=S.iLF0 && i<=S.iLF1) pLF += p*S.wWeights.a[i];
     if(i<=iLowMax && S.fftBuf[i] > maxLow && i*S.binHz >= 15){ maxLow=S.fftBuf[i]; maxLowI=i; }
   }
   const dA = pZ>0 ? 10*Math.log10(pA/pZ) : 0;
@@ -953,6 +1001,9 @@ function measure(){
   S.cma = dC - dA;
   S.peakHz = maxLowI*S.binHz;
   S.peakDb = pkDbfs + cfg.cal;
+  // Leq,LF：20–200 Hz 的 A 加權音量。與 dbZ 共用同一個基準，所以用相對比值換算。
+  // C−A 是整個頻譜的比值，中高頻背景一大就會被稀釋；這個指標只看低頻帶，不受干擾。
+  S.dbLF = S.dbZ + (pZ>0 ? 10*Math.log10((pLF + 1e-20)/pZ) : -100);
 
   // 衝擊音判定：拿「還沒被這一聲拉高的」慢速基線來比，否則會自己遮蔽自己
   const impulse = cfg.impOn && isFinite(S.slowDb) &&
@@ -968,6 +1019,7 @@ function measure(){
   if(!S.secAgg || t - S.secAgg.t0 >= 1000) rollSecond(t);
   const g = S.secAgg;
   g.n++; g.pz += Math.pow(10,S.dbZ/10); g.pa += Math.pow(10,S.dbA/10); g.pc += Math.pow(10,S.dbC/10);
+  if(isFinite(S.dbLF)){ g.plf += Math.pow(10,S.dbLF/10); g.nLF++; }
   if(S.dbZ > g.max) { g.max = S.dbZ; g.maxHz = S.peakHz; }
 
   if(S.refCapture) handleRefCapture(t);
@@ -988,9 +1040,20 @@ function rollSecond(t){
       const sorted = [...S.l90ring].sort((x,y)=>x-y);
       S.l90 = sorted[Math.floor(sorted.length*0.10)];
     }
+    // 低頻帶自己的底噪：低頻共振常常推不動全頻段音量，必須獨立判斷
+    if(g.nLF > 0){
+      const lf = 10*Math.log10(g.plf/g.nLF);
+      rec.lf = +lf.toFixed(1);
+      S.lfRing.push(lf);
+      while(S.lfRing.length > 600) S.lfRing.shift();
+      if(S.lfRing.length >= 20){
+        const sl = [...S.lfRing].sort((x,y)=>x-y);
+        S.l90LF = sl[Math.floor(sl.length*0.10)];
+      }
+    }
     if(g.max > S.lmaxSession) S.lmaxSession = g.max;
   }
-  S.secAgg = { t0:t, n:0, pz:0, pa:0, pc:0, max:-Infinity, maxHz:0 };
+  S.secAgg = { t0:t, n:0, pz:0, pa:0, pc:0, plf:0, nLF:0, max:-Infinity, maxHz:0 };
 }
 function flushSamples(){
   if(!db || !S.sampleQueue.length) return;
@@ -1002,6 +1065,12 @@ function flushSamples(){
 function currentThreshold(){
   const base = (S.l90 === null) ? cfg.floor : S.l90 + cfg.thresh;
   return Math.max(base, cfg.floor);
+}
+/* 低頻用自己的門檻：全頻段門檻調高是為了濾掉日常吵雜，
+   但管路共振的音量本來就不大，會一併被擋掉。兩條線分開走。 */
+function currentLFThreshold(){
+  const base = (S.l90LF === null) ? cfg.lfFloor : S.l90LF + cfg.lfThresh;
+  return Math.max(base, cfg.lfFloor);
 }
 
 function snapshotSpectrum(){
@@ -1018,8 +1087,9 @@ function snapshotSpectrum(){
 }
 
 function newEvent(t0, th, kind){
-  return { t0, th, kind, pz:0, pa:0, pc:0, n:0,
+  return { t0, th, kind, pz:0, pa:0, pc:0, n:0, plf:0, nLF:0,
     maxZ:-Infinity, maxA:-Infinity, maxC:-Infinity, maxPeak:-Infinity, maxCrest:0,
+    maxLF:-Infinity, lfExcess:0, lfTriggered:false,
     maxHz:0, cmaSum:0, spec:null, specAt:-Infinity, manual:false };
 }
 /* ---------- 1/3 八音度頻帶與窄峰（tonality）判定 ---------- */
@@ -1084,6 +1154,10 @@ function detectEvent(t, impulse){
   const th = currentThreshold();
   const over = S.dbZ >= th;
 
+  // 低頻帶自己的門檻：持續型共振推不動全頻段音量，只靠 over 會整批漏掉
+  const lfTh = currentLFThreshold();
+  const overLF = cfg.lfOn && isFinite(S.dbLF) && S.dbLF >= lfTh;
+
   if(!S.inEvent){
     // 衝擊音優先：「趴」一聲往往只有 20–50 ms，撐不到持續時間門檻，
     // 走一般路徑會被整個漏掉，所以偵測到就立刻開事件。
@@ -1097,7 +1171,17 @@ function detectEvent(t, impulse){
         S.inEvent = newEvent(S.aboveSince, th, 'sustained');
         beginRec();
       }
-    } else S.aboveSince = 0;
+    } else if(overLF){
+      // 低頻事件要求撐得久一點，避免把一次性的碰撞算成共振
+      if(!S.aboveLFSince) S.aboveLFSince = t;
+      if(t - S.aboveLFSince >= Math.max(cfg.minDur, 0.5)*1000){
+        S.inEvent = newEvent(S.aboveLFSince, lfTh, 'lf');
+        S.inEvent.lfTriggered = true;
+        beginRec();
+      }
+    } else { S.aboveSince = 0; S.aboveLFSince = 0; }
+    if(!over) S.aboveSince = 0;
+    if(!overLF) S.aboveLFSince = 0;
   }
 
   if(S.inEvent){
@@ -1109,27 +1193,43 @@ function detectEvent(t, impulse){
     if(S.dbC > e.maxC) e.maxC = S.dbC;
     if(S.peakDb > e.maxPeak) e.maxPeak = S.peakDb;
     if(S.crest > e.maxCrest) e.maxCrest = S.crest;
+    if(isFinite(S.dbLF)){
+      if(S.dbLF > e.maxLF) e.maxLF = S.dbLF;
+      e.plf += Math.pow(10,S.dbLF/10); e.nLF++;
+      const ex = S.dbLF - (S.l90LF===null ? cfg.lfFloor : S.l90LF);
+      if(ex > e.lfExcess) e.lfExcess = ex;
+    }
     if(S.dbZ > e.specAt){ e.specAt = S.dbZ; e.spec = snapshotSpectrum(); e.bands = thirdOctaveBands(); }
 
     const tail = e.kind === 'impulse' ? 500 : 1500;
-    if(!over){
+    if(!over && !overLF){
       if(!S.belowSince) S.belowSince = t;
       if(t - S.belowSince >= tail || t - e.t0 > 60000) closeEvent(t - tail);
     } else S.belowSince = 0;
+    if(t - e.t0 > 120000) closeEvent(t);   // 持續型共振可能一直不落下，設上限
   }
 }
 
 /* 事件分類：衝擊 / 低頻共振 / 其他
    crest（峰值因數）是關鍵——敲擊、爆裂聲的瞬時峰值遠高於有效值，
    持續的低頻嗡鳴則兩者接近。 */
+/* 事件分類。
+   關鍵：水錘同時是脈衝又是低頻,舊版把衝擊判定排在低頻之前,
+   於是每一次水錘都被歸成「衝擊音」,低頻那一類永遠是空的。
+   現在先看低頻證據,再用是否為脈衝把水錘與持續共振分開。 */
 function classifyEvent(e){
   if(e.manual) return 'manual';
-  if(e.crest >= 14 && e.dur <= 1.5) return 'impulse';
-  if(e.cma >= 15) return 'lowfreq';
-  if(e.crest >= 12 && e.dur <= 2) return 'impulse';
+  const lowTone  = !!(e.tone && e.tone.hz <= 200);          // 窄峰落在低頻帶
+  const lowEnergy = (e.lfExcess || 0) >= 6;                 // 低頻超出自身底噪
+  const lowRatio  = e.cma >= 15;                            // C−A 判定（背景乾淨時才靈）
+  const isLow = lowTone || lowEnergy || lowRatio;
+  const isImpulsive = (e.crest >= 14 && e.dur <= 1.5) || (e.crest >= 12 && e.dur <= 2);
+  if(isLow && isImpulsive) return 'waterhammer';            // 脈衝 + 低頻 = 水錘特徵
+  if(isLow) return 'lowfreq';                               // 持續 + 低頻 = 共振或馬達
+  if(isImpulsive) return 'impulse';                         // 脈衝 + 寬頻 = 撞擊、木作彈跳
   return 'other';
 }
-const KIND_LABEL = { impulse:'衝擊音', lowfreq:'低頻共振', manual:'手動標記', other:'一般' };
+const KIND_LABEL = { waterhammer:'水錘型', impulse:'衝擊音', lowfreq:'低頻共振', manual:'手動標記', other:'一般' };
 
 async function closeEvent(t1){
   const e = S.inEvent; S.inEvent=null; S.aboveSince=0; S.belowSince=0;
@@ -1147,13 +1247,18 @@ async function closeEvent(t1){
     l90:S.l90===null?null:+S.l90.toFixed(1),
     lpeak:isFinite(e.maxPeak)?+e.maxPeak.toFixed(1):null,
     crest:+e.maxCrest.toFixed(1),
+    lmaxLF:isFinite(e.maxLF)?+e.maxLF.toFixed(1):null,
+    leqLF:e.nLF?+(10*Math.log10(e.plf/e.nLF)).toFixed(1):null,
+    lfExcess:+(e.lfExcess||0).toFixed(1),
+    lfTriggered:!!e.lfTriggered,
+    l90LF:S.l90LF===null?null:+S.l90LF.toFixed(1),
     spec:e.spec ? Array.from(e.spec) : null,
     bands:e.bands || null,
     manual:!!e.manual, note:'', audio:false, cal:cfg.cal,
     spot:cfg.spot||''
   };
-  rec.kind = classifyEvent(rec);
   rec.tone = findTone(rec.bands);
+  rec.kind = classifyEvent(rec);
   const m = matchRefs(rec.spec);
   if(m && m.sim >= 0.5) rec.match = { name:m.name, sim:+m.sim.toFixed(3) };
   S.events.unshift(rec);
@@ -1225,9 +1330,10 @@ function renderRefs(){
 }
 
 function renderKindBar(){
-  const c = { lowfreq:0, impulse:0, manual:0, other:0 };
+  const c = { waterhammer:0, lowfreq:0, impulse:0, manual:0, other:0 };
   S.events.forEach(e=>{ const k = evKind(e); c[k] = (c[k]||0)+1; });
   const out = [];
+  if(c.waterhammer) out.push('<b class="kb-waterhammer">水錘型 '+c.waterhammer+'<i>次</i></b>');
   if(c.lowfreq) out.push('<b class="kb-lowfreq">低頻共振 '+c.lowfreq+'<i>次</i></b>');
   if(c.impulse) out.push('<b class="kb-impulse">衝擊音 '+c.impulse+'<i>次</i></b>');
   if(c.manual)  out.push('<b class="kb-manual">手動 '+c.manual+'<i>次</i></b>');
@@ -1271,6 +1377,13 @@ function paintLive(){
   else if(cma >= 10){ vd.className='pill p-mid'; vd.textContent='偏低頻'; $('#cmaVal').style.color=css('--signal'); }
   else { vd.className='pill p-norm'; vd.textContent='一般噪音'; $('#cmaVal').style.color=''; }
   $('#peakHz').textContent = '主頻 '+(S.peakHz? Math.round(S.peakHz):'--')+' Hz';
+  const lfEl = $('#lfVal');
+  lfEl.textContent = isFinite(S.dbLF) && S.dbLF > 0 ? S.dbLF.toFixed(1) : '--';
+  const lfTh = currentLFThreshold();
+  lfEl.classList.toggle('hot', isFinite(S.dbLF) && S.dbLF >= lfTh);
+  $('#lfNote').textContent = S.l90LF===null
+    ? '底噪計算中'
+    : '低頻底噪 '+S.l90LF.toFixed(1)+'　門檻 '+lfTh.toFixed(1)+' dB';
   $('#specInfo').textContent = S.clipping ? '訊號過載' : (S.ctx? Math.round(S.ctx.sampleRate/1000)+' kHz':'');
   $('#l90Info').textContent = S.l90===null? '' : '底噪 '+S.l90.toFixed(1)+' dB';
 
@@ -1377,7 +1490,8 @@ function renderEvents(){
   if(!list.length){ host.innerHTML='<div class="empty">'+(S.events.length?'目前篩選條件沒有符合的記錄。':'還沒有記錄。回到「監測」分頁開始收音。')+'</div>'; return; }
   host.innerHTML = list.slice(0,300).map(e=>{
     const k = evKind(e);
-    const tag = k==='manual'  ? '<span class="chip b">手動</span>' :
+    const tag = k==='waterhammer' ? '<span class="chip b">水錘型</span>' :
+                k==='manual'  ? '<span class="chip o">手動</span>' :
                 k==='impulse' ? '<span class="chip o">衝擊音</span>' :
                 k==='lowfreq' ? '<span class="chip">'+(e.cma>=20?'強低頻':'低頻共振')+'</span>' : '';
     return '<button class="ev k-'+k+'" data-id="'+e.id+'">'+
@@ -1387,6 +1501,7 @@ function renderEvents(){
       '<div class="ev-meta"><span>'+e.dur.toFixed(1)+' 秒</span>'+
       '<span>主頻 '+e.peakHz+' Hz</span>'+
       '<span>C−A <b>'+(e.cma>=0?'+':'')+e.cma.toFixed(1)+'</b></span>'+
+      (e.lmaxLF!=null?'<span>低頻 '+e.lmaxLF.toFixed(0)+'</span>':'')+
       (e.crest?'<span>峰值因數 '+e.crest.toFixed(0)+'</span>':'')+
       (e.spot?'<span>📍'+escapeHtml(e.spot)+'</span>':'')+
       (e.audio?'<span>🎙 有音檔</span>':'')+'</div>'+
@@ -1396,7 +1511,12 @@ function renderEvents(){
 }
 function evDetail(e){
   const k = evKind(e);
-  const read = k==='impulse'
+  const read = k==='waterhammer'
+    ? '同時具備<b>脈衝特性</b>（峰值因數 '+(e.crest||0).toFixed(1)+' dB）與<b>低頻能量</b>'+
+      (e.lfExcess?'（高出低頻底噪 '+e.lfExcess.toFixed(1)+' dB）':'')+
+      '——這正是<b>水錘</b>的典型組合：關水瞬間的壓力波撞擊管路，激發出管路本身的低頻共振。'+
+      '請比對這個時間點附近是否有人用水。'
+    : k==='impulse'
     ? '峰值因數 '+(e.crest||0).toFixed(1)+' dB —— 瞬間峰值遠高於有效值，屬於<b>敲擊、爆裂型的單次聲響</b>。'+
       '這類聲音常見於木作或系統櫃的熱脹冷縮、建材應力釋放、五金鬆動；與持續的管路共振是不同機制。'
     : k==='lowfreq'
@@ -1423,6 +1543,7 @@ function evDetail(e){
     '<tr><td>最大值 Lmax</td><td class="n">'+e.lmaxZ.toFixed(1)+'</td><td class="n">'+e.lmaxC.toFixed(1)+'</td><td class="n">'+e.lmaxA.toFixed(1)+'</td></tr>'+
     '<tr><td>等效音量 Leq</td><td class="n">'+e.leqZ.toFixed(1)+'</td><td class="n">'+e.leqC.toFixed(1)+'</td><td class="n">'+e.leqA.toFixed(1)+'</td></tr>'+
     (e.lpeak!=null?'<tr><td>瞬時峰值 Lpeak</td><td class="n">'+e.lpeak.toFixed(1)+'</td><td class="n">—</td><td class="n">—</td></tr>':'')+
+    (e.lmaxLF!=null?'<tr><td>低頻 Leq,LF（20–200 Hz）</td><td class="n">—</td><td class="n">—</td><td class="n">'+e.lmaxLF.toFixed(1)+'</td></tr>':'')+
     '</table></div>'+
     '<div class="note" style="margin-top:9px; font-size:12.5px">'+
       '<b>'+KIND_LABEL[k]+'。</b>'+read+'</div>'+ extra +
@@ -1430,7 +1551,9 @@ function evDetail(e){
       '<span>起 '+fmtFull(e.t0)+'</span><span>觸發門檻 '+e.th.toFixed(1)+' dB</span>'+
       '<span>當時背景 L90 '+(e.l90===null?'—':e.l90.toFixed(1))+' dB</span>'+
       '<span>校準偏移 +'+e.cal+'</span>'+
-      (e.spot?'<span>位置 '+escapeHtml(e.spot)+'</span>':'')+'</div>'+
+      (e.spot?'<span>位置 '+escapeHtml(e.spot)+'</span>':'')+
+      (e.lfTriggered?'<span>由低頻門檻觸發</span>':'')+
+      (e.l90LF!=null?'<span>當時低頻底噪 '+e.l90LF.toFixed(1)+'</span>':'')+'</div>'+
     (e.spec? '<canvas class="evspec" data-id="'+e.id+'" data-h="90" style="margin-top:9px"></canvas>':'')+
     '<div id="aud-'+e.id+'"></div>'+
     (e.audioTrimmed? '<p class="tiny" style="margin-top:8px">音檔已因保留上限被清除，數據與頻譜保留。</p>':'')+
@@ -1597,7 +1720,9 @@ function drawTrendChart(){
   });
   // 事件點：依類型上色
   S.events.forEach(e=>{ const x=X(e.t0); if(x>=padL){
-    g.fillStyle = evKind(e)==='impulse' ? css('--signal') : evKind(e)==='lowfreq' ? css('--lowfreq') : css('--text-3');
+    const kk = evKind(e);
+    g.fillStyle = kk==='impulse' ? css('--signal') : kk==='lowfreq' ? css('--lowfreq')
+                : kk==='waterhammer' ? css('--trace') : css('--text-3');
     g.beginPath(); g.arc(x, Y(e.lmaxZ), 2.6, 0, 6.284); g.fill(); } });
   // 時間軸
   g.fillStyle=css('--text-3');
@@ -1961,16 +2086,20 @@ function reportHtmlDoc(){
 
 function csvText(){
   const head=['日期時間','類型','持續秒數','Lmax_dBZ','Lmax_dBC','Lmax_dBA','Lpeak_dBZ','Leq_dBZ','Leq_dBA',
+    'Lmax_LeqLF_20_200Hz','Leq_LF','低頻超出底噪dB','低頻觸發',
     'C_minus_A','峰值因數dB','主頻Hz','窄峰Hz','窄峰超出dB','指紋比對','相似度','量測位置',
-    '觸發門檻dB','背景L90dB','有音檔','備註'];
+    '觸發門檻dB','背景L90dB','低頻底噪dB','有音檔','備註'];
   const rows=[...S.events].sort((a,b)=>a.t0-b.t0).map(e=>[
     fmtFull(e.t0), KIND_LABEL[evKind(e)]||'', e.dur.toFixed(2),
     e.lmaxZ.toFixed(1), e.lmaxC.toFixed(1), e.lmaxA.toFixed(1),
     e.lpeak!=null?e.lpeak.toFixed(1):'', e.leqZ.toFixed(1), e.leqA.toFixed(1),
+    e.lmaxLF!=null?e.lmaxLF.toFixed(1):'', e.leqLF!=null?e.leqLF.toFixed(1):'',
+    e.lfExcess!=null?e.lfExcess.toFixed(1):'', e.lfTriggered?'是':'',
     e.cma.toFixed(1), e.crest!=null?e.crest.toFixed(1):'', e.peakHz,
     e.tone?e.tone.hz:'', e.tone?e.tone.excess:'',
     e.match?e.match.name:'', e.match?Math.round(e.match.sim*100)+'%':'',
     e.spot||'', e.th.toFixed(1), e.l90===null?'':e.l90.toFixed(1),
+    e.l90LF!=null?e.l90LF.toFixed(1):'',
     e.audio?'是':'', (e.note||'').replace(/"/g,'""')
   ]);
   return '﻿'+[head,...rows].map(r=>r.map(c=>/[,"\n]/.test(String(c))?'"'+c+'"':c).join(',')).join('\r\n');
@@ -2133,6 +2262,8 @@ $('#btnCopy').addEventListener('click', ()=>{
 });
 $('#btnPrint').addEventListener('click', ()=>window.print());
 
+function bindCheck(id,key){ const el=$(id); el.checked=!!cfg[key];
+  el.addEventListener('change',()=>{ cfg[key]=el.checked; saveCfg(); if(key==='wake'&&el.checked&&S.running) requestWake(); }); }
 function bindSlider(id, key, label, fmt){
   const el=$(id), out=$(label);
   el.value=cfg[key]; out.textContent=fmt?fmt(cfg[key]):cfg[key];
@@ -2143,6 +2274,9 @@ bindSlider('#thSlider','thresh','#thVal', v=>v.toFixed(0));
 bindSlider('#minDurSlider','minDur','#minDurVal', v=>v.toFixed(2));
 bindSlider('#floorSlider','floor','#floorVal', v=>v.toFixed(0));
 bindSlider('#impSlider','impDelta','#impVal', v=>v.toFixed(0));
+bindSlider('#lfThSlider','lfThresh','#lfThVal', v=>v.toFixed(0));
+bindSlider('#lfFloorSlider','lfFloor','#lfFloorVal', v=>v.toFixed(0));
+bindCheck('#optLF','lfOn');
 bindSlider('#audioCapSlider','audioCap','#audioCapVal', v=>v?v.toFixed(0):'不限');
 bindSlider('#sampleDaysSlider','sampleDays','#sampleDaysVal', v=>v?v.toFixed(0):'永久');
 let cullDb = 45;
@@ -2163,10 +2297,14 @@ function renderThreshold(){
     ? '尚未取得底噪，暫以最低記錄音量為準'
     : '底噪 '+S.l90.toFixed(0)+' ＋ '+cfg.thresh+' ＝ '+(S.l90+cfg.thresh).toFixed(0)+
       '，與最低記錄音量 '+cfg.floor+' 取較大者';
+  const lfTh = currentLFThreshold();
+  $('#lfNow').textContent = lfTh.toFixed(0)+' dB';
+  $('#lfNowNote').textContent = S.l90LF===null
+    ? '尚未取得低頻底噪，暫以低頻最低音量為準'
+    : '低頻底噪 '+S.l90LF.toFixed(0)+' ＋ '+cfg.lfThresh+' ＝ '+(S.l90LF+cfg.lfThresh).toFixed(0)+
+      '，與低頻最低音量 '+cfg.lfFloor+' 取較大者';
 }
-['#thSlider','#floorSlider'].forEach(id=>$(id).addEventListener('input', renderThreshold));
-function bindCheck(id,key){ const el=$(id); el.checked=!!cfg[key];
-  el.addEventListener('change',()=>{ cfg[key]=el.checked; saveCfg(); if(key==='wake'&&el.checked&&S.running) requestWake(); }); }
+['#thSlider','#floorSlider','#lfThSlider','#lfFloorSlider'].forEach(id=>$(id).addEventListener('input', renderThreshold));
 bindCheck('#optRec','rec'); bindCheck('#optWake','wake'); bindCheck('#optBeepGuard','clipGuard');
 bindCheck('#optImp','impOn');
 
