@@ -521,11 +521,14 @@ audio{width:100%; height:36px; margin-top:10px}
         <input type="range" id="minDurSlider" min="0.05" max="2" step="0.05" value="0.2">
       </div>
       <div class="slider-row">
-        <div class="lbl">絕對下限<span class="v"><span id="floorVal">35</span> dB</span></div>
-        <input type="range" id="floorSlider" min="20" max="70" step="1" value="35">
+        <div class="lbl">最低記錄音量<span class="v"><span id="floorVal">35</span> dB</span></div>
+        <input type="range" id="floorSlider" min="20" max="95" step="1" value="35">
       </div>
+      <div class="row"><div class="t"><b>目前實際門檻</b><span id="thNowNote">開始監測後依底噪計算</span></div>
+        <span class="v" id="thNow" style="color:var(--signal); font-weight:600">--</span></div>
     </div>
-    <p class="gfoot">門檻是<b>相對於背景底噪</b>的，白天吵、深夜靜都能自動適應。抓到太多雜訊就調高。</p>
+    <p class="gfoot">實際門檻取<b>「底噪＋上方差值」與「最低記錄音量」的較大者</b>。
+    想只記錄大聲的事件，直接把「最低記錄音量」拉到你要的數字，例如 55 dB 就不會再記 40 幾的。</p>
 
     <div class="ghead">衝擊音</div>
     <div class="group">
@@ -557,11 +560,37 @@ audio{width:100%; height:36px; margin-top:10px}
     </div>
     <p class="gfoot">錄音會錄到家人講話。介意就關掉——關掉之後數據與圖表照常運作。</p>
 
-    <div class="ghead">儲存狀態</div>
+    <div class="ghead">儲存管理</div>
     <div class="group">
       <div class="row"><div class="t" id="storeInfo" style="font-size:14px; color:var(--text-2)">—</div></div>
+      <div class="slider-row">
+        <div class="lbl">音檔保留上限<span class="v"><span id="audioCapVal">200</span> 個</span></div>
+        <input type="range" id="audioCapSlider" min="0" max="1000" step="50" value="200">
+      </div>
+      <div class="row">
+        <div class="t"><b>刪除全部音檔</b><span>保留事件、頻譜與所有圖表</span></div>
+        <button class="btn-sm" id="btnDelAudio">刪除</button>
+      </div>
+      <div class="slider-row">
+        <div class="lbl">每秒取樣保留<span class="v"><span id="sampleDaysVal">14</span> 天</span></div>
+        <input type="range" id="sampleDaysSlider" min="0" max="90" step="1" value="14">
+      </div>
+      <div class="row">
+        <div class="t"><b>清理過期取樣</b><span>只影響長期趨勢圖的最早段，事件不受影響</span></div>
+        <button class="btn-sm" id="btnTrimSamples">清理</button>
+      </div>
+      <div class="slider-row">
+        <div class="lbl">刪除音量低於<span class="v"><span id="cullVal">45</span> dB</span></div>
+        <input type="range" id="cullSlider" min="20" max="95" step="1" value="45">
+      </div>
+      <div class="row">
+        <div class="t"><b>清除小聲事件</b><span>用來清掉門檻調高前記下的那些</span></div>
+        <button class="btn-sm" id="btnCull" style="color:var(--signal)">刪除</button>
+      </div>
     </div>
-    <p class="gfoot">全部存在這支手機裡，不會上傳。清除瀏覽器資料會一併刪除，請定期用 ZIP 匯出備份。</p>
+    <p class="gfoot">音檔約 <b>32 KB/秒</b>，是空間的大宗——一天 100 次事件約 38 MB。
+    超過上限時會自動刪掉最舊的音檔，但事件記錄與頻譜永久保留。
+    每秒取樣約 <b>8.6 MB/天</b>。全部存在這支手機裡，不會上傳；清除瀏覽器資料會一併刪除，請定期用 ZIP 匯出備份。</p>
 
     <div class="note">
       <b>為什麼要看 C−A？</b>A 加權模仿人耳對低頻不敏感的特性，會把 50 Hz 的能量壓掉將近 30 dB。水錘共振恰好落在那裡——用一般噪音 App 測會顯示「才 45 分貝，沒超標」，那份數據反而會被拿來證明你沒事。C 加權保留低頻，兩者的差值愈大，代表能量愈集中在低頻。
@@ -614,7 +643,7 @@ const CFG_KEY = 'lfnr.cfg.v2';
 const cfg = Object.assign({
   // 115 dB 是 dBFS→SPL 偏移量的常見起點（開源分貝計慣用值；MEMS 麥克風推算多落在 110–125）
   cal: 115, thresh: 10, minDur: 0.2, floor: 35,
-  impOn: true, impDelta: 14,
+  impOn: true, impDelta: 14, audioCap: 200, sampleDays: 14,
   rec: true, wake: true, clipGuard: true, place:'', who:'', spot:''
 }, JSON.parse(localStorage.getItem(CFG_KEY) || '{}'));
 function saveCfg(){ try{ localStorage.setItem(CFG_KEY, JSON.stringify(cfg)); }catch(e){} }
@@ -640,6 +669,8 @@ function idbPut(store, val){ return new Promise((res,rej)=>{ const r=tx(store,'r
 function idbGet(store, key){ return new Promise((res,rej)=>{ const r=tx(store).get(key); r.onsuccess=e=>res(e.target.result); r.onerror=e=>rej(e.target.error); }); }
 function idbAll(store){ return new Promise((res,rej)=>{ const r=tx(store).getAll(); r.onsuccess=e=>res(e.target.result||[]); r.onerror=e=>rej(e.target.error); }); }
 function idbClear(store){ return new Promise((res,rej)=>{ const r=tx(store,'readwrite').clear(); r.onsuccess=()=>res(); r.onerror=e=>rej(e.target.error); }); }
+function idbDel(store, key){ return new Promise((res,rej)=>{ const r=tx(store,'readwrite').delete(key); r.onsuccess=()=>res(); r.onerror=e=>rej(e.target.error); }); }
+function idbDelRange(store, range){ return new Promise((res,rej)=>{ const r=tx(store,'readwrite').delete(range); r.onsuccess=()=>res(); r.onerror=e=>rej(e.target.error); }); }
 
 /* ---------- 狀態 ---------- */
 const S = {
@@ -826,6 +857,7 @@ async function finalizeRec(){
   try{ await idbPut('audio',{id:r.id, blob:wav, bytes:wav.size}); }catch(e){}
   const ev = S.events.find(x=>x.id===r.id);
   if(ev){ ev.audio = true; ev.audioBytes = wav.size; await idbPut('events', ev); renderEvents(); }
+  enforceAudioCap();
   updateStore();
 }
 function encodeWAV(samples, rate){
@@ -1243,6 +1275,7 @@ function paintLive(){
   $('#l90Info').textContent = S.l90===null? '' : '底噪 '+S.l90.toFixed(1)+' dB';
 
   drawSpectrum(); drawTrace(); renderStats();
+  if($('#p-setup').classList.contains('on')) renderThreshold();
 }
 
 function drawSpectrum(){
@@ -1400,8 +1433,10 @@ function evDetail(e){
       (e.spot?'<span>位置 '+escapeHtml(e.spot)+'</span>':'')+'</div>'+
     (e.spec? '<canvas class="evspec" data-id="'+e.id+'" data-h="90" style="margin-top:9px"></canvas>':'')+
     '<div id="aud-'+e.id+'"></div>'+
+    (e.audioTrimmed? '<p class="tiny" style="margin-top:8px">音檔已因保留上限被清除，數據與頻譜保留。</p>':'')+
     '<label class="field" style="margin:10px 0 0"><span>備註（例：樓上剛沖馬桶／關總水閥後仍出現）</span>'+
       '<input type="text" class="evnote" data-id="'+e.id+'" value="'+escapeHtml(e.note||'')+'" placeholder="寫下當下的情境，報告會帶上"></label>'+
+    '<button class="btn-sm evdel" data-id="'+e.id+'" style="margin-top:12px; color:var(--signal)">刪除這筆事件</button>'+
     '</div>';
 }
 function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -1433,6 +1468,8 @@ function drawEvSpec(cv, spec){
 }
 
 $('#evList').addEventListener('click', async e => {
+  const del = e.target.closest('.evdel');
+  if(del){ e.stopPropagation(); deleteOneEvent(del.dataset.id); return; }
   const btn = e.target.closest('.ev'); if(!btn) return;
   const id = btn.dataset.id;
   openEv = (openEv===id) ? null : id;
@@ -1959,13 +1996,74 @@ function exportReport(){
   saveFile('噪音報告_'+new Date().toISOString().slice(0,10)+'.html',
            new Blob([reportHtmlDoc()],{type:'text/html;charset=utf-8'}));
 }
+/* ---------- 儲存管理 ----------
+   音檔是空間大宗（約 32 KB/秒），長期監測必須有上限，否則會塞爆手機。 */
+async function enforceAudioCap(){
+  if(!cfg.audioCap) return;                       // 0 = 不限
+  const withAudio = S.events.filter(e=>e.audio).sort((a,b)=>b.t0-a.t0);
+  if(withAudio.length <= cfg.audioCap) return;
+  const drop = withAudio.slice(cfg.audioCap);
+  for(const e of drop){
+    try{ await idbDel('audio', e.id); }catch(err){}
+    e.audio = false; e.audioTrimmed = true;
+    try{ await idbPut('events', e); }catch(err){}
+  }
+  renderEvents(); updateStore();
+}
+async function deleteAllAudio(){
+  const n = S.events.filter(e=>e.audio).length;
+  if(!n){ toast('目前沒有音檔。'); return; }
+  if(!confirm('刪除全部 '+n+' 個音檔？\n事件記錄、頻譜與圖表都會保留。')) return;
+  await idbClear('audio');
+  S.events.forEach(e=>{ if(e.audio){ e.audio=false; e.audioTrimmed=true; idbPut('events', e); } });
+  renderEvents(); updateStore(); toast('已刪除 '+n+' 個音檔');
+}
+async function trimSamples(){
+  const days = cfg.sampleDays;
+  if(!days){ toast('目前設定為永久保留。'); return; }
+  const cut = Date.now() - days*86400000;
+  const before = S.samples.length;
+  if(!confirm('刪除 '+days+' 天前的每秒取樣資料？\n事件記錄不受影響，只有長期趨勢圖的最早段會消失。')) return;
+  try{ await idbDelRange('samples', IDBKeyRange.upperBound(cut)); }catch(e){}
+  S.samples = S.samples.filter(s=>s.t >= cut);
+  drawCharts(); updateStore();
+  toast('已清理 '+(before - S.samples.length)+' 筆取樣');
+}
+async function deleteEventsBelow(db_){
+  const doomed = S.events.filter(e=>e.lmaxZ < db_);
+  if(!doomed.length){ toast('沒有低於 '+db_+' dB 的事件。'); return; }
+  if(!confirm('刪除 '+doomed.length+' 筆音量低於 '+db_+' dB 的事件？\n連同它們的音檔一起刪除，無法復原。')) return;
+  for(const e of doomed){
+    try{ await idbDel('events', e.id); }catch(err){}
+    if(e.audio){ try{ await idbDel('audio', e.id); }catch(err){} }
+  }
+  S.events = S.events.filter(e=>e.lmaxZ >= db_);
+  openEv = null; renderEvents(); renderStats(); drawCharts(); updateStore();
+  toast('已刪除 '+doomed.length+' 筆事件');
+}
+async function deleteOneEvent(id){
+  const e = S.events.find(x=>x.id===id); if(!e) return;
+  if(!confirm('刪除這筆事件？無法復原。')) return;
+  try{ await idbDel('events', id); }catch(err){}
+  if(e.audio){ try{ await idbDel('audio', id); }catch(err){} }
+  S.events = S.events.filter(x=>x.id!==id);
+  openEv = null; renderEvents(); renderStats(); drawCharts(); updateStore();
+}
+
 async function updateStore(){
-  let txt='事件 '+S.events.length+' 筆　每秒取樣 '+S.samples.length+' 筆';
-  let audioBytes=0;
-  try{ const all=await idbAll('audio'); audioBytes=all.reduce((s,a)=>s+(a.bytes||0),0); txt+='　音檔 '+all.length+' 個（'+(audioBytes/1048576).toFixed(1)+' MB）'; }catch(e){}
-  try{ if(navigator.storage&&navigator.storage.estimate){ const q=await navigator.storage.estimate();
-    txt+='<br>瀏覽器已用 '+(q.usage/1048576).toFixed(1)+' MB／可用 '+(q.quota/1073741824).toFixed(1)+' GB'; } }catch(e){}
-  $('#storeInfo').innerHTML=txt;
+  const rows = [];
+  rows.push(['事件記錄', S.events.length.toLocaleString()+' 筆']);
+  rows.push(['每秒取樣', S.samples.length.toLocaleString()+' 筆']);
+  let bytes = 0, n = 0;
+  try{ const all = await idbAll('audio'); n = all.length; bytes = all.reduce((s,a)=>s+(a.bytes||0),0); }catch(e){}
+  rows.push(['音檔', n+' 個　'+(bytes/1048576).toFixed(1)+' MB']);
+  try{ if(navigator.storage && navigator.storage.estimate){
+    const q = await navigator.storage.estimate();
+    rows.push(['瀏覽器總用量', (q.usage/1048576).toFixed(1)+' MB　可用 '+(q.quota/1073741824).toFixed(1)+' GB']);
+  } }catch(e){}
+  $('#storeInfo').innerHTML = rows.map(r=>
+    '<div style="display:flex; gap:10px; padding:2px 0"><span style="flex:1">'+r[0]+
+    '</span><span style="font-variant-numeric:tabular-nums; color:var(--text)">'+r[1]+'</span></div>').join('');
 }
 
 /* =========================================================================
@@ -1977,7 +2075,7 @@ $('#nav').addEventListener('click', e=>{
   $$('.page').forEach(p=>p.classList.remove('on'));
   $('#p-'+b.dataset.p).classList.add('on');
   if(b.dataset.p==='charts') requestAnimationFrame(drawCharts);
-  if(b.dataset.p==='setup') updateStore();
+  if(b.dataset.p==='setup'){ updateStore(); renderThreshold(); }
 });
 $('#btnRun').addEventListener('click', ()=> S.running ? stop() : start());
 $('#btnMark').addEventListener('click', manualMark);
@@ -2045,6 +2143,28 @@ bindSlider('#thSlider','thresh','#thVal', v=>v.toFixed(0));
 bindSlider('#minDurSlider','minDur','#minDurVal', v=>v.toFixed(2));
 bindSlider('#floorSlider','floor','#floorVal', v=>v.toFixed(0));
 bindSlider('#impSlider','impDelta','#impVal', v=>v.toFixed(0));
+bindSlider('#audioCapSlider','audioCap','#audioCapVal', v=>v?v.toFixed(0):'不限');
+bindSlider('#sampleDaysSlider','sampleDays','#sampleDaysVal', v=>v?v.toFixed(0):'永久');
+let cullDb = 45;
+(function(){
+  const el=$('#cullSlider'), out=$('#cullVal');
+  el.addEventListener('input', ()=>{ cullDb=parseFloat(el.value); out.textContent=cullDb.toFixed(0); });
+})();
+$('#btnDelAudio').addEventListener('click', deleteAllAudio);
+$('#btnTrimSamples').addEventListener('click', trimSamples);
+$('#btnCull').addEventListener('click', ()=>deleteEventsBelow(cullDb));
+$('#audioCapSlider').addEventListener('change', enforceAudioCap);
+
+/* 門檻即時顯示：滑桿一動就更新，讓人看得到實際生效的數字 */
+function renderThreshold(){
+  const th = currentThreshold();
+  $('#thNow').textContent = th.toFixed(0)+' dB';
+  $('#thNowNote').textContent = S.l90===null
+    ? '尚未取得底噪，暫以最低記錄音量為準'
+    : '底噪 '+S.l90.toFixed(0)+' ＋ '+cfg.thresh+' ＝ '+(S.l90+cfg.thresh).toFixed(0)+
+      '，與最低記錄音量 '+cfg.floor+' 取較大者';
+}
+['#thSlider','#floorSlider'].forEach(id=>$(id).addEventListener('input', renderThreshold));
 function bindCheck(id,key){ const el=$(id); el.checked=!!cfg[key];
   el.addEventListener('change',()=>{ cfg[key]=el.checked; saveCfg(); if(key==='wake'&&el.checked&&S.running) requestWake(); }); }
 bindCheck('#optRec','rec'); bindCheck('#optWake','wake'); bindCheck('#optBeepGuard','clipGuard');
