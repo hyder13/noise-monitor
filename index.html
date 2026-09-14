@@ -188,7 +188,7 @@ input[type=range]{width:100%; accent-color:var(--signal); height:28px}
 
 /* ---------- canvas ---------- */
 .canvas-card{background:var(--surface); border-radius:var(--r); padding:12px 12px 8px; margin-bottom:8px}
-canvas{display:block; width:100%; border-radius:8px; touch-action:pan-y}
+canvas{display:block; width:100%; touch-action:pan-y}
 .legend{display:flex; flex-wrap:wrap; gap:14px; margin-top:9px; padding:0 4px; font-size:12px; color:var(--text-3)}
 .legend i{display:inline-block; width:12px; height:3px; border-radius:2px; vertical-align:middle; margin-right:5px}
 
@@ -353,12 +353,12 @@ audio{width:100%; height:36px; margin-top:10px}
     <p class="gfoot" style="padding-top:0">自動門檻沒抓到、但你確實聽見時按這個。會存下前後各數秒的資料。</p>
 
     <div class="ghead">即時頻譜　0–500 Hz</div>
-    <div class="canvas-card"><canvas id="cvSpec" height="150"></canvas></div>
+    <div class="canvas-card"><canvas id="cvSpec" data-h="150"></canvas></div>
     <p class="gfoot" style="padding-top:0">水錘與管路共振會在 20–150 Hz 出現<b>固定位置的窄峰</b>；腳步聲與撞擊聲是寬頻、位置不固定。</p>
 
     <div class="ghead">近 3 分鐘　<span id="l90Info"></span></div>
     <div class="canvas-card">
-      <canvas id="cvTrace" height="110"></canvas>
+      <canvas id="cvTrace" data-h="110"></canvas>
       <div class="legend">
         <span><i style="background:var(--trace)"></i>dB(Z)</span>
         <span><i style="background:var(--lowfreq)"></i>dB(C)</span>
@@ -432,12 +432,12 @@ audio{width:100%; height:36px; margin-top:10px}
     <h1>趨勢</h1>
 
     <div class="ghead">事件的時段分布</div>
-    <div class="canvas-card"><canvas id="cvHour" height="140"></canvas></div>
+    <div class="canvas-card"><canvas id="cvHour" data-h="140"></canvas></div>
     <p class="gfoot">集中在早晚洗澡、沖廁時段，就是指向用水行為的直接證據。紫色為夜間 22–06 時。</p>
 
     <div class="ghead">音量趨勢線</div>
     <div class="canvas-card">
-      <canvas id="cvTrend" height="150"></canvas>
+      <canvas id="cvTrend" data-h="150"></canvas>
       <div class="legend">
         <span><i style="background:var(--trace)"></i>dB(Z)</span>
         <span><i style="background:var(--calm)"></i>dB(A)</span>
@@ -448,11 +448,11 @@ audio{width:100%; height:36px; margin-top:10px}
     <p class="gfoot">藍色虛線是你按下的情境標記。</p>
 
     <div class="ghead">事件主頻分布</div>
-    <div class="canvas-card"><canvas id="cvFreq" height="130"></canvas></div>
+    <div class="canvas-card"><canvas id="cvFreq" data-h="130"></canvas></div>
     <p class="gfoot"><b>多數事件擠在同一個頻率附近就是共振</b>——共振腔的尺寸固定，頻率才會固定。</p>
 
     <div class="ghead">平均事件頻譜</div>
-    <div class="canvas-card"><canvas id="cvAvgSpec" height="130"></canvas></div>
+    <div class="canvas-card"><canvas id="cvAvgSpec" data-h="130"></canvas></div>
     <p class="gfoot">所有事件頻譜的疊加平均，比單一事件更能看出穩定的共振峰。</p>
   </section>
 
@@ -1204,12 +1204,15 @@ function renderKindBar(){
    繪圖
    ========================================================================= */
 function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+/* 目標高度存在 data-h,不能讀 height attribute——設定 cv.height 會改寫它,
+   於是每次重繪都再乘一次 dpr,在 dpr>1 的裝置上會逐幀放大。 */
 function fitCanvas(cv){
   const dpr = Math.min(window.devicePixelRatio||1, 2);
-  const w = cv.clientWidth, h = parseInt(cv.getAttribute('height'),10);
-  if(cv.width !== Math.round(w*dpr) || cv.height !== Math.round(h*dpr)){
-    cv.width = Math.round(w*dpr); cv.height = Math.round(h*dpr);
-  }
+  const h = +(cv.dataset.h || 140);
+  cv.style.height = h+'px';
+  const w = cv.clientWidth;
+  const W = Math.round(w*dpr), H = Math.round(h*dpr);
+  if(cv.width !== W || cv.height !== H){ cv.width = W; cv.height = H; }
   const g = cv.getContext('2d');
   g.setTransform(dpr,0,0,dpr,0,0);
   g.clearRect(0,0,w,h);
@@ -1392,7 +1395,7 @@ function evDetail(e){
       '<span>當時背景 L90 '+(e.l90===null?'—':e.l90.toFixed(1))+' dB</span>'+
       '<span>校準偏移 +'+e.cal+'</span>'+
       (e.spot?'<span>位置 '+escapeHtml(e.spot)+'</span>':'')+'</div>'+
-    (e.spec? '<canvas class="evspec" data-id="'+e.id+'" height="90" style="margin-top:9px"></canvas>':'')+
+    (e.spec? '<canvas class="evspec" data-id="'+e.id+'" data-h="90" style="margin-top:9px"></canvas>':'')+
     '<div id="aud-'+e.id+'"></div>'+
     '<label class="field" style="margin:10px 0 0"><span>備註（例：樓上剛沖馬桶／關總水閥後仍出現）</span>'+
       '<input type="text" class="evnote" data-id="'+e.id+'" value="'+escapeHtml(e.note||'')+'" placeholder="寫下當下的情境，報告會帶上"></label>'+
